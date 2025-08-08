@@ -7,6 +7,8 @@ import { db } from '@/lib/firebase'
 import { doc, getDoc, updateDoc, onSnapshot, deleteDoc } from 'firebase/firestore'
 import { downloadGroupAsExcel, type ExcelGroup } from '@/lib/excel'
 
+
+
 interface Member {
   id: number
   name: string
@@ -59,6 +61,14 @@ export default function GroupDashboard() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  // 멤버 삭제 관련 state - ✅ 올바른 위치
+  const [showMemberDeleteModal, setShowMemberDeleteModal] = useState(false)
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
+  const [isDeletingMember, setIsDeletingMember] = useState(false)
+  const [showPayerSelectModal, setShowPayerSelectModal] = useState(false)
+  const [expensesNeedingNewPayer, setExpensesNeedingNewPayer] = useState<Expense[]>([])
+  const [payerSelections, setPayerSelections] = useState<{[expenseId: number]: number}>({})
   
   // 지출 수정 관련 state
   const [showExpenseEditModal, setShowExpenseEditModal] = useState(false)
@@ -80,6 +90,182 @@ export default function GroupDashboard() {
     participants: [] as number[],
     date: new Date().toISOString().split('T')[0]
   })
+
+  // ✅ 멤버 삭제 관련 함수들 추가
+  const openMemberDeleteModal = (member: Member) => {
+    setMemberToDelete(member)
+    setShowMemberDeleteModal(true)
+    setShowAccountModal(false) // 계좌 모달 닫기
+  }
+
+const deleteMember = async () => {
+    if (!group || !memberToDelete) return
+
+    if (group.members.length <= 1) {
+      alert('❌ 그룹에는 최소 1명의 멤버가 있어야 합니다.')
+      return
+    }
+
+    // 삭제할 멤버가 결제자인 지출들 찾기
+    const expensesWhereDeletedMemberIsPayer = group.expenses.filter(expense => 
+      expense.payerId === memberToDelete.id
+    )
+
+    // 새로운 결제자를 선택해야 하는 지출이 있는 경우
+    if (expensesWhereDeletedMemberIsPayer.length > 0) {
+      const validExpensesForPayerSelection = expensesWhereDeletedMemberIsPayer
+        .map(expense => ({
+          ...expense,
+          participants: expense.participants.filter(id => id !== memberToDelete.id)
+        }))
+        .filter(expense => expense.participants.length > 0)
+
+      if (validExpensesForPayerSelection.length > 0) {
+        setExpensesNeedingNewPayer(validExpensesForPayerSelection)
+        
+        // 기본값으로 각 지출의 첫 번째 참여자를 결제자로 설정
+        const defaultSelections: {[expenseId: number]: number} = {}
+        validExpensesForPayerSelection.forEach(expense => {
+          defaultSelections[expense.id] = expense.participants[0]
+        })
+        setPayerSelections(defaultSelections)
+        
+        setShowMemberDeleteModal(false)
+        setShowPayerSelectModal(true)
+        return
+      }
+    }
+
+    // 결제자 선택이 필요없는 경우 바로 삭제 진행
+    await proceedWithMemberDeletion()
+  }
+
+  const proceedWithMemberDeletion = async () => {
+    if (!group || !memberToDelete) return
+
+    setIsDeletingMember(true)
+
+    try {
+      console.log('🗑️ 멤버 삭제 시작:', memberToDelete.name)
+
+      let updatedExpenses = [...group.expenses]
+
+      // 결제자 변경이 필요한 지출들 처리
+      if (expensesNeedingNewPayer.length > 0) {
+        updatedExpenses = updatedExpenses.map(expense => {
+          if (payerSelections[expense.id] !== undefined) {
+            const remainingParticipants = expense.participants.filter(id => id !== memberToDelete.id)
+            
+            return {
+              ...expense,
+              payerId: payerSelections[expense.id], // 사용자가 선택한 새로운 결제자
+              participants: remainingParticipants,
+              perPersonAmount: Math.round(expense.amount / remainingParticipants.length)
+            }
+          }
+
+          if (expense.participants.includes(memberToDelete.id)) {
+            const remainingParticipants = expense.participants.filter(id => id !== memberToDelete.id)
+            
+            if (remainingParticipants.length === 0) {
+              return null
+            }
+
+            return {
+              ...expense,
+              participants: remainingParticipants,
+              perPersonAmount: Math.round(expense.amount / remainingParticipants.length)
+            }
+          }
+
+          return expense
+        }).filter(expense => expense !== null)
+
+        // ID 재정렬
+        updatedExpenses = updatedExpenses.map((expense, index) => ({
+          ...expense!,
+          id: index
+        }))
+      } else {
+        // 결제자 변경이 필요없는 경우
+        updatedExpenses = group.expenses.map(expense => {
+          if (expense.participants.includes(memberToDelete.id)) {
+            const remainingParticipants = expense.participants.filter(id => id !== memberToDelete.id)
+            
+            if (remainingParticipants.length === 0) {
+              return null
+            }
+
+            return {
+              ...expense,
+              participants: remainingParticipants,
+              perPersonAmount: Math.round(expense.amount / remainingParticipants.length)
+            }
+          }
+
+          return expense
+        }).filter(expense => expense !== null)
+
+        updatedExpenses = updatedExpenses.map((expense, index) => ({
+          ...expense!,
+          id: index
+        }))
+      }
+
+      // 멤버 목록에서 해당 멤버 제거 및 ID 재정렬
+      const updatedMembers = group.members.filter(member => member.id !== memberToDelete.id)
+      const reindexedMembers = updatedMembers.map((member, index) => ({
+        ...member,
+        id: index
+      }))
+
+      // 지출 내역의 payerId와 participants를 새로운 ID로 업데이트
+      const finalExpenses = updatedExpenses.map(expense => {
+        const newPayerId = reindexedMembers.findIndex(m => 
+          updatedMembers.find(um => um.id === expense.payerId)?.name === m.name
+        )
+        
+        const newParticipants = expense.participants.map(participantId => 
+          reindexedMembers.findIndex(m => 
+            updatedMembers.find(um => um.id === participantId)?.name === m.name
+          )
+        ).filter(id => id !== -1)
+
+        return {
+          ...expense,
+          payerId: newPayerId,
+          participants: newParticipants
+        }
+      })
+
+      console.log('🔥 Firebase에 업데이트된 데이터 저장 중...')
+
+      // Firebase에 업데이트
+      await updateDoc(doc(db, 'groups', params.id as string), {
+        members: reindexedMembers,
+        expenses: finalExpenses,
+        lastUpdated: new Date()
+      })
+
+      console.log('✅ 멤버 삭제 및 지출 재계산 완료!')
+
+      alert(`🗑️ ${memberToDelete.name}님이 그룹에서 제외되었습니다.\n관련된 지출 내역도 자동으로 재계산되었습니다.`)
+      
+      // 상태 초기화
+      setShowMemberDeleteModal(false)
+      setShowPayerSelectModal(false)
+      setMemberToDelete(null)
+      setExpensesNeedingNewPayer([])
+      setPayerSelections({})
+
+    } catch (error) {
+      console.error('❌ 멤버 삭제 실패:', error)
+      alert('멤버 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setIsDeletingMember(false)
+    }
+  }
+
 
   // Firebase에서 그룹 데이터 실시간 구독
   useEffect(() => {
@@ -586,21 +772,39 @@ export default function GroupDashboard() {
               친구들에게 이 링크를 공유해서 그룹에 초대하세요!
             </div>
           </div>
+          </div>
+          </div>
 
           <div className="flex flex-wrap justify-center gap-2">
-            {group.members.map(member => (
-              <div key={member.id} className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full border border-white/30">
-                <div 
-                  className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
-                  style={{ backgroundColor: member.color }}
-                >
-                  {member.name.charAt(0)}
-                </div>
-                <span className="text-warm-dark text-sm">{member.name}</span>
-              </div>
-            ))}
-          </div>
+  {group.members.map(member => (
+    <div key={member.id} className="group relative">
+      <div className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full border border-white/30">
+        <div 
+          className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center cursor-pointer"
+          style={{ backgroundColor: member.color }}
+          onClick={() => showMemberAccount(member)}
+        >
+          {member.name.charAt(0)}
         </div>
+        <span className="text-warm-dark text-sm">{member.name}</span>
+        
+        {/* ✅ 삭제 버튼 추가 */}
+        {group.members.length > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              openMemberDeleteModal(member)
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center"
+            title={`${member.name} 제외하기`}
+          >
+            ×
+          </button>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
 
         {/* 탭 네비게이션 */}
         <div className="mb-8">
@@ -1008,10 +1212,9 @@ export default function GroupDashboard() {
                 >
                   {selectedMember.name.charAt(0)}
                 </div>
-                <h3 className="text-xl font-bold text-warm-dark mb-2">{selectedMember.name}</h3>
-                 <h3 className="text-xl font-bold text-warm-dark mb-4">{selectedMember.name}</h3>
+                               <h3 className="text-xl font-bold text-warm-dark mb-4">{selectedMember.name}</h3>
                 
-                {/* 연락처 및 계좌 정보 - 모바일 최적화 */}
+               {/* 연락처 및 계좌 정보 - 모바일 최적화 */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-4 text-left">
                   <div className="mb-3">
                     <span className="text-sm text-gray-600 block mb-1">📞 전화번호</span>
@@ -1031,6 +1234,7 @@ export default function GroupDashboard() {
                     </p>
                   </div>
                 </div>
+                
                 <div className="space-y-2">
                   <button
                     onClick={() => copyAccount(selectedMember.account)}
@@ -1044,6 +1248,16 @@ export default function GroupDashboard() {
                   >
                     ✏️ 내 정보 수정
                   </button>
+                  
+                  {group.members.length > 1 && (
+                    <button
+                      onClick={() => openMemberDeleteModal(selectedMember)}
+                      className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all"
+                    >
+                      🗑️ 그룹에서 제외
+                    </button>
+                  )}
+                  
                   <button
                     onClick={() => setShowAccountModal(false)}
                     className="w-full py-2 bg-gray-200 text-warm-dark rounded-lg font-semibold hover:bg-gray-300 transition-all"
@@ -1157,7 +1371,173 @@ export default function GroupDashboard() {
             </div>
           </div>
         )}
+            {/* ✅ 여기에 두 모달 추가! */}
+        {/* 멤버 삭제 확인 모달 */}
+        {showMemberDeleteModal && memberToDelete && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+              <div className="text-center">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold text-warm-dark mb-4">멤버 제외 확인</h3>
+                
+                <div className="mb-6">
+                  <div 
+                    className="w-16 h-16 rounded-full text-white text-2xl font-bold flex items-center justify-center mx-auto mb-3"
+                    style={{ backgroundColor: memberToDelete.color }}
+                  >
+                    {memberToDelete.name.charAt(0)}
+                  </div>
+                  <p className="text-warm-gray mb-4">
+                    <strong className="text-warm-dark">{memberToDelete.name}</strong>님을<br/>
+                    그룹에서 제외하시겠습니까?
+                  </p>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="text-sm text-red-800">
+                    <div className="font-semibold mb-1">🚨 주의사항</div>
+                    <div className="text-xs">
+                      • 제외된 후에는 되돌릴 수 없습니다<br/>
+                      • 모든 지출 내역이 재계산됩니다<br/>
+                      • 정산 결과도 자동으로 업데이트됩니다
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowMemberDeleteModal(false)
+                      setMemberToDelete(null)
+                    }}
+                    disabled={isDeletingMember}
+                    className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-lg font-semibold transition-all disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={deleteMember}
+                    disabled={isDeletingMember}
+                    className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeletingMember ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        처리중...
+                      </span>
+                    ) : (
+                      '🗑️ 제외하기'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 새로운 결제자 선택 모달 */}
+        {showPayerSelectModal && memberToDelete && expensesNeedingNewPayer.length > 0 && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-3">💳</div>
+                <h3 className="text-xl font-bold text-warm-dark mb-2">새로운 결제자 선택</h3>
+                <p className="text-warm-gray">
+                  <strong>{memberToDelete.name}</strong>님이 결제자였던 지출들의<br/>
+                  새로운 결제자를 선택해주세요
+                </p>
+              </div>
+
+              <div className="space-y-6 mb-8">
+                {expensesNeedingNewPayer.map(expense => {
+                  const availableMembers = group.members.filter(member => 
+                    expense.participants.includes(member.id) && member.id !== memberToDelete.id
+                  )
+
+                  return (
+                    <div key={expense.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="font-semibold text-warm-dark text-lg">{expense.title}</h4>
+                          <p className="text-warm-gray text-sm">{expense.date}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-warm-dark">{expense.amount.toLocaleString()}원</div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-warm-dark font-semibold mb-3">
+                          새로운 결제자 선택:
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {availableMembers.map(member => (
+                            <label key={member.id} className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                              payerSelections[expense.id] === member.id
+                                ? 'border-pink-400 bg-pink-50'
+                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                            }`}>
+                              <input
+                                type="radio"
+                                name={`payer-${expense.id}`}
+                                value={member.id}
+                                checked={payerSelections[expense.id] === member.id}
+                                onChange={() => setPayerSelections(prev => ({
+                                  ...prev,
+                                  [expense.id]: member.id
+                                }))}
+                                className="w-5 h-5 text-pink-500"
+                              />
+                              <div 
+                                className="w-8 h-8 rounded-full text-white text-sm font-bold flex items-center justify-center"
+                                style={{ backgroundColor: member.color }}
+                              >
+                                {member.name.charAt(0)}
+                              </div>
+                              <span className="text-warm-dark font-medium">{member.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowPayerSelectModal(false)
+                    setShowMemberDeleteModal(true)
+                    setExpensesNeedingNewPayer([])
+                    setPayerSelections({})
+                  }}
+                  disabled={isDeletingMember}
+                  className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-lg font-semibold transition-all disabled:opacity-50"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={proceedWithMemberDeletion}
+                  disabled={isDeletingMember || Object.keys(payerSelections).length !== expensesNeedingNewPayer.length}
+                  className="flex-1 py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeletingMember ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      처리중...
+                    </span>
+                  ) : (
+                    '✅ 확인 후 멤버 제외'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
-    </div>
+    
   )
 }
+       

@@ -52,11 +52,6 @@ export default function CreateGroupPage() {
 
     const validMembers = members.filter(member => member.name.trim() !== '')
     
-    if (validMembers.length < 2) {
-      alert('최소 2명 이상의 참여자가 필요합니다.')
-      return
-    }
-
     setIsCreating(true)
 
     try {
@@ -193,7 +188,7 @@ export default function CreateGroupPage() {
               초기 참여자 추가 *
             </label>
             <p className="text-sm text-warm-gray mb-4">
-              💡 그룹 생성 후 초대 링크로 더 많은 친구들을 초대할 수 있어요!
+               💡 참여자 추가 안해도 됨. 그룹 입장 시 알아서 추가 됨.
             </p>
             
             <div className="space-y-6">
