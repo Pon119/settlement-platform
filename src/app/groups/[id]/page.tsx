@@ -1083,10 +1083,16 @@ ${inviteLink}
           </div>
 
           {/* 지출 내역 */}
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl">
-            <h3 className="text-xl font-bold text-warm-dark mb-6">
-              지출 내역 ({group.expenses.length}개)
-            </h3>
+<div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl">
+  <h3 className="text-xl font-bold text-warm-dark mb-4">지출 내역 ({group.expenses.length}개)</h3>
+  
+  {/* 🎯 사용법 안내 추가 */}
+  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+    <div className="flex items-center gap-2 text-green-800 text-sm">
+      <span className="text-lg">💡</span>
+      <span>지출 내역이 잘못되어도 괜찮아요! <strong>정산 금액, 결제자와 참여자를 수정할 수 있어요!</strong> 수정/삭제 버튼을 통해서 수정해보세요!</span>
+    </div>
+  </div>
             {group.expenses.length === 0 ? (
               <p className="text-warm-gray text-center py-8">
                 아직 지출 내역이 없습니다.
