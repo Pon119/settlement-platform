@@ -208,7 +208,7 @@ export default function CreateGroupPage() {
                       type="tel"
                       value={member.phone}
                       onChange={(e) => updateMember(index, 'phone', e.target.value)}
-                      placeholder="전화번호"
+                      placeholder="전화번호(아무거나 써도 됨)"
                       disabled={isCreating}
                       className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
                     />

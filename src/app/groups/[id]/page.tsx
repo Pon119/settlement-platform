@@ -996,7 +996,7 @@ const deleteMember = async () => {
                             <div className="text-sm text-warm-gray">1인당 {expense.perPersonAmount.toLocaleString()}원</div>
                           </div>
                           {/* 수정/삭제 버튼 */}
-                          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex flex-col gap-1">
                             <button
                               onClick={() => openExpenseEditModal(expense)}
                               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs font-medium transition-all"
