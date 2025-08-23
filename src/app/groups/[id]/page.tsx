@@ -784,6 +784,18 @@ ${inviteLink}
     });
   };
 
+  const copySettlementMessage = (from: Member, to: Member, amount: number) => {
+  const message = `${from.name}이 ${to.name}한테 ${amount.toLocaleString()}원을 보내줘야 합니다.
+
+${to.account}`
+
+  navigator.clipboard.writeText(message).then(() => {
+    alert('💸 정보가 복사되었습니다!\n정보를 확인해 보세요!')
+  }).catch(() => {
+    prompt('아래 메시지를 복사해서 보내세요:', message)
+  })
+}
+
   // 로딩 중
   if (loading) {
     return (
@@ -1401,9 +1413,18 @@ ${inviteLink}
                         </div>
                       </div>
                     </div>
-                    <div className="text-xl font-bold text-pink-600">
-                      {settlement.amount.toLocaleString()}원
-                    </div>
+                    <div className="flex items-center gap-3">
+  <div className="text-xl font-bold text-pink-600">
+    {settlement.amount.toLocaleString()}원
+  </div>
+  <button
+    onClick={() => copySettlementMessage(from!, to!, settlement.amount)}
+    className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-all"
+    title="송금 메시지 복사"
+  >
+    📋 복사
+  </button>
+</div>
                   </div>
                 );
               })}
