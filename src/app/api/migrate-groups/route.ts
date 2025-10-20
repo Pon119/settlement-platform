@@ -1,8 +1,22 @@
 // app/api/migrate-groups/route.ts
 import { db } from '@/lib/firebase'
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore'
-import { generateInviteCode, createInviteLink } from '@/lib/invite'
 import { NextResponse } from 'next/server'
+
+// ✅ 직접 함수 정의 (import 의존성 제거)
+function generateInviteCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let code = ''
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
+}
+
+function createInviteLink(inviteCode: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jeongsanheabar.vercel.app'
+  return `${baseUrl}/invite/${inviteCode}`
+}
 
 export async function GET() {
   try {
@@ -12,6 +26,7 @@ export async function GET() {
     
     let updatedCount = 0
     let skippedCount = 0
+    const results = []
     
     for (const groupDoc of groupsSnapshot.docs) {
       const data = groupDoc.data()
@@ -31,9 +46,27 @@ export async function GET() {
         
         console.log(`✅ 그룹 "${data.name}" (${groupDoc.id}) 업데이트 완료`)
         console.log(`   초대 링크: ${inviteLink}`)
+        
+        results.push({
+          id: groupDoc.id,
+          name: data.name,
+          inviteCode,
+          inviteLink,
+          status: 'updated'
+        })
+        
         updatedCount++
       } else {
         console.log(`⏭️ 그룹 "${data.name}" (${groupDoc.id}) 이미 초대 코드 있음`)
+        
+        results.push({
+          id: groupDoc.id,
+          name: data.name,
+          inviteCode: data.inviteCode,
+          inviteLink: data.inviteLink,
+          status: 'skipped'
+        })
+        
         skippedCount++
       }
     }
@@ -47,13 +80,16 @@ export async function GET() {
       message: '마이그레이션 완료',
       updated: updatedCount,
       skipped: skippedCount,
-      total: groupsSnapshot.size
+      total: groupsSnapshot.size,
+      details: results
     })
   } catch (error: any) {
     console.error('❌ 마이그레이션 실패:', error)
+    
     return NextResponse.json({ 
       success: false, 
-      error: error.message 
+      error: error.message,
+      stack: error.stack 
     }, { status: 500 })
   }
 }
