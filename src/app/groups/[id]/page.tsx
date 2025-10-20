@@ -1465,47 +1465,51 @@ ${to.account}`;
                   return (
                     <div
                       key={index}
-                      className="flex justify-between items-center p-4 bg-white/10 rounded-lg border border-white/20"
+                      className="p-4 bg-white/10 rounded-lg border border-white/20"
                     >
-                      <div className="flex items-center gap-4">
+                      {/* 프로필 영역 */}
+                      <div className="flex items-center justify-center gap-3 mb-4">
                         <div
-                          className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl"
+                          className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
                           style={{ backgroundColor: from?.color }}
                           onClick={() => from && showMemberAccount(from)}
                           title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
                         >
-                          {from?.name.charAt(0)}
+                          <span className="text-lg">{from?.name.charAt(0)}</span>
                         </div>
-                        <span className="text-2xl text-pink-500">→</span>
+                        <span className="text-3xl text-pink-500">→</span>
                         <div
-                          className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl"
+                          className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
                           style={{ backgroundColor: to?.color }}
                           onClick={() => to && showMemberAccount(to)}
                           title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
                         >
-                          {to?.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-warm-dark">
-                            <strong>{from?.name}</strong>이 <strong>{to?.name}</strong>에게
-                          </div>
-                          <div className="text-sm text-warm-gray">송금해야 합니다</div>
+                          <span className="text-lg">{to?.name.charAt(0)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-xl font-bold text-pink-600">
+
+                      {/* 텍스트 정보 - 명확한 설명 */}
+                      <div className="text-center mb-4">
+                        <div className="text-warm-dark font-medium text-base leading-relaxed mb-2">
+                          <strong className="text-warm-dark">{from?.name}</strong>이{" "}
+                          <strong className="text-warm-dark">{to?.name}</strong>에게
+                          <br />
+                          송금해야 합니다
+                        </div>
+                        <div className="text-3xl font-bold text-pink-600">
                           {settlement.amount.toLocaleString()}원
                         </div>
-                        <button
-                          onClick={() =>
-                            copySettlementMessage(from!, to!, settlement.amount)
-                          }
-                          className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-all"
-                          title="송금 메시지 복사"
-                        >
-                          📋 복사
-                        </button>
                       </div>
+
+                      {/* 버튼 */}
+                      <button
+                        onClick={() =>
+                          copySettlementMessage(from!, to!, settlement.amount)
+                        }
+                        className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all text-base"
+                      >
+                        📋 송금 정보 복사
+                      </button>
                     </div>
                   );
                 })}
@@ -1601,7 +1605,7 @@ ${to.account}`;
                 >
                   {editingMember.name.charAt(0)}
                 </div>
-                <h3 className="text-xl font-bold text-warm-dark">내 정보 수정</h3>
+                <h3 className="text-xl font-bold text-warm-dark">{editingMember.name} 정보 수정</h3>
               </div>
 
               <div className="space-y-4">
@@ -1620,7 +1624,7 @@ ${to.account}`;
 
                 <div>
                   <label className="block text-warm-dark font-semibold mb-2">
-                    전화번호
+                    전화번호 (아무거나 적어도 됨.)
                   </label>
                   <input
                     type="tel"
