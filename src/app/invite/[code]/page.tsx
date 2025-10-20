@@ -17,6 +17,13 @@ interface Group {
   maxMembers: number
 }
 
+interface MemberSession {
+  groupId: string
+  memberId: number
+  memberName: string
+  timestamp: number
+}
+
 export default function InvitePage() {
   const params = useParams()
   const router = useRouter()
@@ -24,6 +31,14 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState('')
+  
+  // 참여 폼 표시 여부
+  const [showJoinForm, setShowJoinForm] = useState(false)
+  
+  // ✅ 새로운 state: 멤버 선택 모달
+  const [showMemberSelectModal, setShowMemberSelectModal] = useState(false)
+  const [existingMembership, setExistingMembership] = useState<MemberSession | null>(null)
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null)
 
   // 참여자 정보 입력 폼
   const [memberInfo, setMemberInfo] = useState({
@@ -33,6 +48,65 @@ export default function InvitePage() {
   })
 
   const inviteCode = params.code as string
+
+  // ✅ localStorage에서 멤버십 정보 가져오기
+  const getMemberSession = (groupId: string): MemberSession | null => {
+    if (typeof window === 'undefined') return null
+    
+    try {
+      const sessionsJson = localStorage.getItem('groupMemberships')
+      if (!sessionsJson) return null
+      
+      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson)
+      return sessions[groupId] || null
+    } catch (error) {
+      console.error('세션 정보 로드 실패:', error)
+      return null
+    }
+  }
+
+  // ✅ localStorage에 멤버십 정보 저장
+  const saveMemberSession = (groupId: string, memberId: number, memberName: string) => {
+    if (typeof window === 'undefined') return
+    
+    try {
+      const sessionsJson = localStorage.getItem('groupMemberships')
+      const sessions: { [key: string]: MemberSession } = sessionsJson 
+        ? JSON.parse(sessionsJson) 
+        : {}
+      
+      sessions[groupId] = {
+        groupId,
+        memberId,
+        memberName,
+        timestamp: Date.now()
+      }
+      
+      localStorage.setItem('groupMemberships', JSON.stringify(sessions))
+      console.log('✅ 멤버 세션 저장 완료:', sessions[groupId])
+    } catch (error) {
+      console.error('세션 정보 저장 실패:', error)
+    }
+  }
+
+  // ✅ 멤버십 정보 삭제 (로그아웃)
+  const clearMemberSession = (groupId: string) => {
+    if (typeof window === 'undefined') return
+    
+    try {
+      const sessionsJson = localStorage.getItem('groupMemberships')
+      if (!sessionsJson) return
+      
+      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson)
+      delete sessions[groupId]
+      
+      localStorage.setItem('groupMemberships', JSON.stringify(sessions))
+      setExistingMembership(null)
+      console.log('✅ 멤버 세션 삭제 완료')
+    } catch (error) {
+      console.error('세션 정보 삭제 실패:', error)
+    }
+  }
 
   // 초대 코드로 그룹 찾기
   useEffect(() => {
@@ -91,6 +165,23 @@ export default function InvitePage() {
 
         setGroup(groupData)
         
+        // ✅ 기존 멤버십 확인
+        const existingSession = getMemberSession(groupData.id)
+        if (existingSession) {
+          // 해당 멤버가 아직 그룹에 존재하는지 확인
+          const memberStillExists = groupData.members.some(
+            m => m.id === existingSession.memberId
+          )
+          
+          if (memberStillExists) {
+            setExistingMembership(existingSession)
+            console.log('✅ 기존 멤버십 발견:', existingSession)
+          } else {
+            // 멤버가 그룹에서 제거되었으면 세션 정보 삭제
+            clearMemberSession(groupData.id)
+          }
+        }
+        
       } catch (error) {
         console.error('❌ 그룹 검색 실패:', error)
         setError('그룹 정보를 불러오는 중 오류가 발생했습니다.')
@@ -102,7 +193,41 @@ export default function InvitePage() {
     findGroupByInviteCode()
   }, [inviteCode])
 
-  // 그룹 참여하기
+  // ✅ 기존 멤버로 입장하기
+  const enterAsExistingMember = () => {
+    if (!group || !selectedMemberId === null) return
+    
+    const selectedMember = group.members.find(m => m.id === selectedMemberId)
+    if (!selectedMember) {
+      alert('선택한 멤버를 찾을 수 없습니다.')
+      return
+    }
+    
+    // 세션 정보 저장
+    saveMemberSession(group.id, selectedMember.id, selectedMember.name)
+    
+    alert(`👋 ${selectedMember.name}님으로 입장합니다!`)
+    
+    // 그룹 대시보드로 이동
+    router.push(`/groups/${group.id}`)
+  }
+
+  // ✅ 빠른 재입장 (마지막으로 사용한 멤버로)
+  const quickEnter = () => {
+    if (!group || !existingMembership) return
+    
+    const member = group.members.find(m => m.id === existingMembership.memberId)
+    if (!member) {
+      alert('이전에 사용한 멤버 정보를 찾을 수 없습니다.')
+      clearMemberSession(group.id)
+      return
+    }
+    
+    alert(`👋 ${member.name}님으로 입장합니다!`)
+    router.push(`/groups/${group.id}`)
+  }
+
+  // 그룹 참여하기 (새 멤버)
   const joinGroup = async () => {
     if (!group) return
 
@@ -155,6 +280,12 @@ export default function InvitePage() {
       })
 
       console.log('✅ 그룹 참여 성공!')
+
+      // ✅ 새로 추가된 멤버의 ID 찾기 (마지막 멤버)
+      const newMemberId = updatedMembers.length - 1
+      
+      // ✅ 세션 정보 저장
+      saveMemberSession(group.id, newMemberId, name.trim())
 
       alert(`🎉 "${group.name}" 그룹에 성공적으로 참여했습니다!`)
 
@@ -219,7 +350,7 @@ export default function InvitePage() {
           </p>
         </div>
 
-        {/* 그룹 정보 */}
+        {/* 그룹 정보 - 항상 표시 */}
         <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl mb-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-warm-dark mb-2">
@@ -246,84 +377,267 @@ export default function InvitePage() {
               현재 {group.members.length}명 참여 중 (최대 {group.maxMembers}명)
             </p>
           </div>
+
+          {/* ✅ 기존 멤버십 표시 */}
+          {existingMembership && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">👋</div>
+                  <div>
+                    <div className="text-sm text-blue-800 font-semibold">
+                      이전에 <strong>{existingMembership.memberName}</strong>님으로 참여하셨어요
+                    </div>
+                    <div className="text-xs text-blue-600">
+                      {new Date(existingMembership.timestamp).toLocaleDateString('ko-KR')}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => clearMemberSession(group.id)}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 참여 폼 */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl">
-          <h3 className="text-xl font-bold text-warm-dark mb-6 text-center">
-            참여 정보 입력
-          </h3>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-warm-dark font-semibold mb-2">
-                이름 *
-              </label>
-              <input
-                type="text"
-                value={memberInfo.name}
-                onChange={(e) => setMemberInfo(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="이름을 입력해주세요"
-                disabled={joining}
-                className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
-              />
+        {/* ✅ 버튼 영역 개선 */}
+        {!showJoinForm && (
+          <div className="space-y-4 mb-8">
+            {/* 기존 멤버십이 있는 경우 */}
+            {existingMembership && (
+              <div className="space-y-3">
+                {/* 빠른 입장 버튼 */}
+                <button
+                  onClick={quickEnter}
+                  className="w-full px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                >
+                  👋 {existingMembership.memberName}님으로 빠른 입장
+                </button>
+                
+                {/* 다른 멤버로 입장 버튼 */}
+                <button
+                  onClick={() => setShowMemberSelectModal(true)}
+                  className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                >
+                  🔄 다른 멤버로 입장하기
+                </button>
+              </div>
+            )}
+
+            {/* 기존 멤버십이 없는 경우 */}
+            {!existingMembership && group.members.length > 0 && (
+              <button
+                onClick={() => setShowMemberSelectModal(true)}
+                className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+              >
+                🙋 이미 참여했어요
+              </button>
+            )}
+
+            {/* 새로 참여하기 버튼 */}
+            <button
+              onClick={() => setShowJoinForm(true)}
+              className="w-full px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+            >
+              ✨ 새로 참여하기
+            </button>
+
+            {/* 홈으로 버튼 */}
+            <Link 
+              href="/"
+              className="block w-full px-8 py-4 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg text-center"
+            >
+              🏠 홈으로
+            </Link>
+
+            <p className="text-warm-gray text-sm text-center mt-4">
+              그룹을 먼저 확인해보세요. 필요할 때 참여하시면 돼요!
+            </p>
+          </div>
+        )}
+
+        {/* ✅ 멤버 선택 모달 */}
+        {showMemberSelectModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-3">🙋</div>
+                <h3 className="text-xl font-bold text-warm-dark mb-2">
+                  누구로 입장하실래요?
+                </h3>
+                <p className="text-warm-gray text-sm">
+                  그룹에 참여한 멤버 중 선택해주세요
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {group.members.map((member) => (
+                  <label
+                    key={member.id}
+                    className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      selectedMemberId === member.id
+                        ? 'border-pink-400 bg-pink-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="member-select"
+                      value={member.id}
+                      checked={selectedMemberId === member.id}
+                      onChange={() => setSelectedMemberId(member.id)}
+                      className="w-5 h-5 text-pink-500"
+                    />
+                    <div
+                      className="w-12 h-12 rounded-full text-white text-lg font-bold flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: member.color }}
+                    >
+                      {member.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-warm-dark">
+                        {member.name}
+                      </div>
+                      <div className="text-sm text-warm-gray">
+                        {member.phone}
+                      </div>
+                      {existingMembership?.memberId === member.id && (
+                        <div className="text-xs text-blue-600 font-medium mt-1">
+                          ✓ 마지막으로 사용
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowMemberSelectModal(false)
+                    setSelectedMemberId(null)
+                  }}
+                  className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-lg font-semibold transition-all"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={enterAsExistingMember}
+                  disabled={selectedMemberId === null}
+                  className="flex-1 py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  입장하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 참여 폼 - 토글로 표시/숨김 */}
+        {showJoinForm && (
+          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-warm-dark">
+                새 멤버로 참여하기
+              </h3>
+              <button
+                onClick={() => {
+                  setShowJoinForm(false)
+                  setMemberInfo({ name: '', phone: '', account: '' })
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+                title="닫기"
+              >
+                ×
+              </button>
             </div>
             
-            <div>
-              <label className="block text-warm-dark font-semibold mb-2">
-                전화번호 *
-              </label>
-              <input
-                type="tel"
-                value={memberInfo.phone}
-                onChange={(e) => setMemberInfo(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="010-1234-5678"
-                disabled={joining}
-                className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
-              />
-            </div>
-            
-        <div>
-              <label className="block text-warm-dark font-semibold mb-2">
-                계좌번호 *
-                <span className="text-sm text-warm-gray font-normal ml-2">(은행명 포함)</span>
-              </label>
-              <div className="relative">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-warm-dark font-semibold mb-2">
+                  이름 *
+                </label>
                 <input
                   type="text"
-                  value={memberInfo.account}
-                  onChange={(e) => setMemberInfo(prev => ({ ...prev, account: e.target.value }))}
-                  placeholder="카카오뱅크 3333-01-1234567890"
+                  value={memberInfo.name}
+                  onChange={(e) => setMemberInfo(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="이름을 입력해주세요"
                   disabled={joining}
-                  className="w-full px-4 py-3 pr-16 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50 text-sm sm:text-base overflow-x-auto"
+                  className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
                 />
-                {/* 글자수 표시 */}
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-white/80 px-1 rounded">
-                  {memberInfo.account.length}자
-                </div>
               </div>
-              <p className="text-xs text-warm-gray mt-2">
-                💡 정산 완료 후 송금받을 계좌번호를 한 줄로 입력해주세요<br/>
-                긴 계좌번호는 입력창에서 좌우 스크롤로 확인 가능 (나중에 수정 가능)
-              </p>
+              
+              <div>
+                <label className="block text-warm-dark font-semibold mb-2">
+                  전화번호 *
+                </label>
+                <input
+                  type="tel"
+                  value={memberInfo.phone}
+                  onChange={(e) => setMemberInfo(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="010-1234-5678"
+                  disabled={joining}
+                  className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-warm-dark font-semibold mb-2">
+                  계좌번호 *
+                  <span className="text-sm text-warm-gray font-normal ml-2">(은행명 포함)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={memberInfo.account}
+                    onChange={(e) => setMemberInfo(prev => ({ ...prev, account: e.target.value }))}
+                    placeholder="카카오뱅크 3333-01-1234567890"
+                    disabled={joining}
+                    className="w-full px-4 py-3 pr-16 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50 text-sm sm:text-base overflow-x-auto"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-white/80 px-1 rounded">
+                    {memberInfo.account.length}자
+                  </div>
+                </div>
+                <p className="text-xs text-warm-gray mt-2">
+                  💡 정산 완료 후 송금받을 계좌번호를 한 줄로 입력해주세요<br/>
+                  긴 계좌번호는 입력창에서 좌우 스크롤로 확인 가능 (나중에 수정 가능)
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={joinGroup}
+                  disabled={joining}
+                  className="flex-1 py-4 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {joining ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      그룹 참여 중...
+                    </span>
+                  ) : (
+                    '🎉 그룹 참여하기'
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowJoinForm(false)
+                    setMemberInfo({ name: '', phone: '', account: '' })
+                  }}
+                  disabled={joining}
+                  className="flex-1 py-4 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-xl font-semibold transition-all disabled:opacity-50"
+                >
+                  취소
+                </button>
+              </div>
             </div>
-            
-            <button
-              onClick={joinGroup}
-              disabled={joining}
-              className="w-full py-4 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {joining ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  그룹 참여 중...
-                </span>
-              ) : (
-                '🎉 그룹 참여하기'
-              )}
-            </button>
           </div>
-        </div>
+        )}
 
         {/* 하단 링크 */}
         <div className="text-center mt-8">
