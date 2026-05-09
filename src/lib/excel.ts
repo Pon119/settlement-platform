@@ -1,5 +1,8 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { calculateSettlement, type Settlement } from './settlement';
+
+export type { Settlement };
 
 export interface ExcelGroup {
   id: string;
@@ -8,60 +11,6 @@ export interface ExcelGroup {
   members: any[];
   expenses: any[];
   createdAt: any;
-}
-
-export interface Settlement {
-  from: number;
-  to: number;
-  amount: number;
-}
-
-// 정산 계산 함수 (기존과 동일)
-export function calculateSettlement(expenses: any[], members: any[]): Settlement[] {
-  const rawPairs: { [key: string]: number } = {};
-
-  // 원본 부채 관계 계산
-  expenses.forEach(expense => {
-    const payerId = expense.payerId;
-    const perAmount = expense.perPersonAmount;
-
-    expense.participants.forEach((participantId: number) => {
-      if (participantId !== payerId) {
-        const key = `${participantId}→${payerId}`;
-        rawPairs[key] = (rawPairs[key] || 0) + perAmount;
-      }
-    });
-  });
-
-  // 상호 상쇄 계산
-  const netMap = new Map<string, number>();
-  for (const [key, amount] of Object.entries(rawPairs)) {
-    const [from, to] = key.split('→').map(id => parseInt(id));
-    const sorted = [from, to].sort((a, b) => a - b);
-    const normKey = `${sorted[0]}<->${sorted[1]}`;
-
-    const current = netMap.get(normKey) || 0;
-    if (from < to) {
-      netMap.set(normKey, current + amount);
-    } else {
-      netMap.set(normKey, current - amount);
-    }
-  }
-
-  // 결과 생성
-  const result: Settlement[] = [];
-  for (const [key, value] of netMap.entries()) {
-    const [a, b] = key.split('<->').map(id => parseInt(id));
-    if (a === b || Math.round(value) === 0) continue;
-
-    if (value > 0) {
-      result.push({ from: a, to: b, amount: Math.round(value) });
-    } else {
-      result.push({ from: b, to: a, amount: Math.round(-value) });
-    }
-  }
-
-  return result;
 }
 
 // 그룹 데이터를 엑셀로 다운로드

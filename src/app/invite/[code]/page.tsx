@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { db } from '@/lib/firebase'
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 import { isValidInviteCode, addMemberToGroup, type NewMember } from '@/lib/invite'
+import { getMemberSession, saveMemberSession, clearMemberSession, type MemberSession } from '@/lib/session'
 
 interface Group {
   id: string
@@ -15,13 +16,6 @@ interface Group {
   inviteCode: string
   allowInvites: boolean
   maxMembers: number
-}
-
-interface MemberSession {
-  groupId: string
-  memberId: number
-  memberName: string
-  timestamp: number
 }
 
 export default function InvitePage() {
@@ -48,65 +42,6 @@ export default function InvitePage() {
   })
 
   const inviteCode = params.code as string
-
-  // ✅ localStorage에서 멤버십 정보 가져오기
-  const getMemberSession = (groupId: string): MemberSession | null => {
-    if (typeof window === 'undefined') return null
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships')
-      if (!sessionsJson) return null
-      
-      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson)
-      return sessions[groupId] || null
-    } catch (error) {
-      console.error('세션 정보 로드 실패:', error)
-      return null
-    }
-  }
-
-  // ✅ localStorage에 멤버십 정보 저장
-  const saveMemberSession = (groupId: string, memberId: number, memberName: string) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships')
-      const sessions: { [key: string]: MemberSession } = sessionsJson 
-        ? JSON.parse(sessionsJson) 
-        : {}
-      
-      sessions[groupId] = {
-        groupId,
-        memberId,
-        memberName,
-        timestamp: Date.now()
-      }
-      
-      localStorage.setItem('groupMemberships', JSON.stringify(sessions))
-      console.log('✅ 멤버 세션 저장 완료:', sessions[groupId])
-    } catch (error) {
-      console.error('세션 정보 저장 실패:', error)
-    }
-  }
-
-  // ✅ 멤버십 정보 삭제 (로그아웃)
-  const clearMemberSession = (groupId: string) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships')
-      if (!sessionsJson) return
-      
-      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson)
-      delete sessions[groupId]
-      
-      localStorage.setItem('groupMemberships', JSON.stringify(sessions))
-      setExistingMembership(null)
-      console.log('✅ 멤버 세션 삭제 완료')
-    } catch (error) {
-      console.error('세션 정보 삭제 실패:', error)
-    }
-  }
 
   // 초대 코드로 그룹 찾기
   useEffect(() => {
@@ -179,6 +114,7 @@ export default function InvitePage() {
           } else {
             // 멤버가 그룹에서 제거되었으면 세션 정보 삭제
             clearMemberSession(groupData.id)
+            setExistingMembership(null)
           }
         }
         
@@ -220,6 +156,7 @@ export default function InvitePage() {
     if (!member) {
       alert('이전에 사용한 멤버 정보를 찾을 수 없습니다.')
       clearMemberSession(group.id)
+      setExistingMembership(null)
       return
     }
     
@@ -394,7 +331,7 @@ export default function InvitePage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => clearMemberSession(group.id)}
+                  onClick={() => { clearMemberSession(group.id); setExistingMembership(null); }}
                   className="text-xs text-blue-600 hover:text-blue-800 underline"
                 >
                   삭제

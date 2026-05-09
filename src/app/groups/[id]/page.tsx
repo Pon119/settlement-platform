@@ -12,6 +12,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { downloadGroupAsExcel, type ExcelGroup } from "@/lib/excel";
+import { getMemberSession, saveMemberSession, clearMemberSession, type MemberSession } from "@/lib/session";
+import { calculateSettlement, type Settlement } from "@/lib/settlement";
 
 interface Member {
   id: number;
@@ -43,18 +45,6 @@ interface Group {
   inviteLink: string;
 }
 
-interface Settlement {
-  from: number;
-  to: number;
-  amount: number;
-}
-
-interface MemberSession {
-  groupId: string;
-  memberId: number;
-  memberName: string;
-  timestamp: number;
-}
 
 export default function GroupDashboard() {
   const params = useParams();
@@ -110,63 +100,6 @@ export default function GroupDashboard() {
     date: new Date().toISOString().split("T")[0],
   });
 
-  // ✅ localStorage 세션 관리 함수들
-  const getMemberSession = (groupId: string): MemberSession | null => {
-    if (typeof window === 'undefined') return null;
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships');
-      if (!sessionsJson) return null;
-      
-      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson);
-      return sessions[groupId] || null;
-    } catch (error) {
-      console.error('세션 정보 로드 실패:', error);
-      return null;
-    }
-  };
-
-  const saveMemberSession = (groupId: string, memberId: number, memberName: string) => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships');
-      const sessions: { [key: string]: MemberSession } = sessionsJson 
-        ? JSON.parse(sessionsJson) 
-        : {};
-      
-      sessions[groupId] = {
-        groupId,
-        memberId,
-        memberName,
-        timestamp: Date.now()
-      };
-      
-      localStorage.setItem('groupMemberships', JSON.stringify(sessions));
-      console.log('✅ 멤버 세션 저장 완료:', sessions[groupId]);
-    } catch (error) {
-      console.error('세션 정보 저장 실패:', error);
-    }
-  };
-
-  const clearMemberSession = (groupId: string) => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      const sessionsJson = localStorage.getItem('groupMemberships');
-      if (!sessionsJson) return;
-      
-      const sessions: { [key: string]: MemberSession } = JSON.parse(sessionsJson);
-      delete sessions[groupId];
-      
-      localStorage.setItem('groupMemberships', JSON.stringify(sessions));
-      setCurrentMember(null);
-      console.log('✅ 멤버 세션 삭제 완료');
-    } catch (error) {
-      console.error('세션 정보 삭제 실패:', error);
-    }
-  };
-
   // ✅ 멤버 선택 및 저장
   const selectAndSaveMember = () => {
     if (!group || selectedMemberId === null) return;
@@ -191,6 +124,7 @@ export default function GroupDashboard() {
     if (!confirmLogout) return;
     
     clearMemberSession(group.id);
+    setCurrentMember(null);
     setShowMemberSelectModal(true);
   };
 
@@ -223,6 +157,7 @@ export default function GroupDashboard() {
             } else {
               // 멤버가 그룹에서 제거됨
               clearMemberSession(groupData.id);
+              setCurrentMember(null);
               setShowMemberSelectModal(true);
             }
           } else {
@@ -410,6 +345,7 @@ export default function GroupDashboard() {
       // ✅ 삭제된 멤버가 현재 로그인한 멤버라면 세션 초기화
       if (currentMember?.id === memberToDelete.id) {
         clearMemberSession(group.id);
+        setCurrentMember(null);
         setShowMemberSelectModal(true);
       }
 
@@ -488,52 +424,6 @@ export default function GroupDashboard() {
         ? prev.participants.filter((id) => id !== memberId)
         : [...prev.participants, memberId],
     }));
-  };
-
-  const calculateSettlement = (): Settlement[] => {
-    if (!group) return [];
-
-    const rawPairs: { [key: string]: number } = {};
-
-    group.expenses.forEach((expense) => {
-      const payerId = expense.payerId;
-      const perAmount = expense.perPersonAmount;
-
-      expense.participants.forEach((participantId) => {
-        if (participantId !== payerId) {
-          const key = `${participantId}→${payerId}`;
-          rawPairs[key] = (rawPairs[key] || 0) + perAmount;
-        }
-      });
-    });
-
-    const netMap = new Map<string, number>();
-    for (const [key, amount] of Object.entries(rawPairs)) {
-      const [from, to] = key.split("→").map((id) => parseInt(id));
-      const sorted = [from, to].sort((a, b) => a - b);
-      const normKey = `${sorted[0]}<->${sorted[1]}`;
-
-      const current = netMap.get(normKey) || 0;
-      if (from < to) {
-        netMap.set(normKey, current + amount);
-      } else {
-        netMap.set(normKey, current - amount);
-      }
-    }
-
-    const result: Settlement[] = [];
-    for (const [key, value] of netMap.entries()) {
-      const [a, b] = key.split("<->").map((id) => parseInt(id));
-      if (a === b || Math.round(value) === 0) continue;
-
-      if (value > 0) {
-        result.push({ from: a, to: b, amount: Math.round(value) });
-      } else {
-        result.push({ from: b, to: a, amount: Math.round(-value) });
-      }
-    }
-
-    return result;
   };
 
   const showMemberAccount = (member: Member) => {
@@ -867,7 +757,7 @@ ${to.account}`;
     );
   }
 
-  const settlements = calculateSettlement();
+  const settlements = calculateSettlement(group.expenses, group.members);
 
   return (
     <div className="min-h-screen py-8 px-4">
