@@ -184,6 +184,7 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 | 2026-05-10 | design: 전체 UI 리디자인 — 모던 정산 앱 스타일 적용 | globals.css에 CSS 커스텀 프로퍼티(`--color-primary: #D4537E` 등) 추가; 배경 경량화; 모든 페이지 카드 white+border+shadow로 교체; 탭 언더라인 스타일; 입력 필드 clean border; 버튼 `#D4537E` 계열 통일 |
 | 2026-05-10 | design: Y2K 네오 브루탈리즘 전면 리디자인 | Galmuri 픽셀폰트, Win95 카드, 마키 띠, 네온글로우, 젤리 버튼 적용 — 전체 4개 페이지(landing/create/[id]/invite) + globals.css 완전 교체; lib/* 로직 무변경 |
 | 2026-05-10 | fix: Next.js 15.4.5 → 16.2.6 업데이트 | 보안 취약점 패치; next.config.ts에서 Next.js 16에서 제거된 `eslint` 키 삭제 |
+| 2026-05-10 | fix: groups/[id] 버그 3개 수정 | ① 멤버선택모달 inline style로 position:fixed 강제(.y2k-noise>* 규칙 충돌 해소) ② 엑셀·삭제 버튼을 지출탭 최하단으로 이동(폼→지출내역→안내→구분선→버튼) ③ font-pixel 전체 크기 2~3px 상향(9→11, 10→12, 11→13, 12→14, 14/13→16px) + globals.css font-smoothing 추가 |
 
 ---
 

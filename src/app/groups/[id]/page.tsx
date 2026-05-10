@@ -333,7 +333,7 @@ export default function GroupDashboard() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--y2k-cream)' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--y2k-black)] mx-auto mb-4"></div>
-          <p className="font-pixel text-[11px] text-[var(--y2k-t2)]">로딩 중...</p>
+          <p className="font-pixel text-[13px] text-[var(--y2k-t2)]">로딩 중...</p>
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ export default function GroupDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--y2k-cream)' }}>
         <div className="text-center">
-          <p className="font-pixel text-[13px] text-[var(--y2k-t1)] mb-4">❌ 그룹을 찾을 수 없습니다</p>
+          <p className="font-pixel text-[16px] text-[var(--y2k-t1)] mb-4">❌ 그룹을 찾을 수 없습니다</p>
           <Link href="/" className="y2k-btn px-6 py-2 text-sm">홈으로</Link>
         </div>
       </div>
@@ -362,23 +362,23 @@ export default function GroupDashboard() {
       {/* 마키 */}
       <div className="y2k-marquee">
         <div className="y2k-marquee-inner">
-          <span className="font-pixel text-[10px] text-[var(--y2k-yellow)] px-4">{MARQUEE_TEXT}</span>
-          <span className="font-pixel text-[10px] text-[var(--y2k-yellow)] px-4">{MARQUEE_TEXT}</span>
+          <span className="font-pixel text-[12px] text-[var(--y2k-yellow)] px-4">{MARQUEE_TEXT}</span>
+          <span className="font-pixel text-[12px] text-[var(--y2k-yellow)] px-4">{MARQUEE_TEXT}</span>
         </div>
       </div>
 
       {/* 멤버 선택 모달 */}
       {showMemberSelectModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] px-4">
+        <div className="px-4" style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="y2k-win95 max-w-md w-full">
             <div className="y2k-win95-bar">
-              <span className="font-pixel text-[9px] text-white">👤 멤버 선택.exe</span>
+              <span className="font-pixel text-[11px] text-white">👤 멤버 선택.exe</span>
               <div className="flex gap-1">
                 <div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div><div className="y2k-win95-btn">✕</div>
               </div>
             </div>
             <div className="bg-white p-5">
-              <p className="font-pixel text-[11px] text-[var(--y2k-black)] mb-1">누구로 보시나요?</p>
+              <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-1">누구로 보시나요?</p>
               <p className="text-[10px] text-[var(--y2k-t2)] mb-4">그룹 멤버 중 본인을 선택해주세요</p>
               <div className="space-y-2 mb-4">
                 {group.members.map(member => (
@@ -395,7 +395,7 @@ export default function GroupDashboard() {
                       {member.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-pixel text-[10px] text-[var(--y2k-black)]">{member.name}</p>
+                      <p className="font-pixel text-[12px] text-[var(--y2k-black)]">{member.name}</p>
                       <p className="text-[9px] text-[var(--y2k-t3)]">{member.phone}</p>
                     </div>
                   </label>
@@ -417,7 +417,7 @@ export default function GroupDashboard() {
             <div className="flex items-center gap-3">
               <Link href="/" className="text-[10px] text-[var(--y2k-t3)] hover:text-[var(--y2k-t1)]">← 홈</Link>
               <span className="text-[var(--y2k-muted)]">|</span>
-              <span className="font-pixel text-[14px] text-[var(--y2k-black)]">{group.name}</span>
+              <span className="font-pixel text-[16px] text-[var(--y2k-black)]">{group.name}</span>
             </div>
             <button
               onClick={() => setHeaderOpen(v => !v)}
@@ -438,7 +438,7 @@ export default function GroupDashboard() {
                     {currentMember.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-pixel text-[10px] text-[var(--y2k-black)]">{currentMember.name}</p>
+                    <p className="font-pixel text-[12px] text-[var(--y2k-black)]">{currentMember.name}</p>
                     <p className="text-[9px] text-[var(--y2k-t3)]">현재 접속 중</p>
                   </div>
                   <button
@@ -453,7 +453,7 @@ export default function GroupDashboard() {
 
               {/* 초대 코드 */}
               <div className="p-3 rounded-lg" style={{ background: 'var(--y2k-cream)', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}>
-                <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-2">🔗 초대 링크</p>
+                <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-2">🔗 초대 링크</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 px-2 py-1.5 rounded text-[10px] font-mono text-[var(--y2k-t1)]" style={{ background: 'white', border: '1px solid var(--y2k-muted)' }}>{group.inviteCode}</code>
                   <button onClick={() => copyInviteLink(group.inviteLink)} className="y2k-btn px-3 py-1.5 text-[11px]">복사</button>
@@ -462,7 +462,7 @@ export default function GroupDashboard() {
 
               {/* 참여자 칩 */}
               <div>
-                <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-2">참여자 ({group.members.length}명)</p>
+                <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-2">참여자 ({group.members.length}명)</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.members.map(member => {
                     const isMe = currentMember?.id === member.id;
@@ -481,7 +481,7 @@ export default function GroupDashboard() {
                           {member.name.charAt(0)}
                         </div>
                         <span className="text-[10px] font-medium text-[var(--y2k-black)]">{member.name}</span>
-                        {isMe && <span className="font-pixel text-[8px] y2k-glow-pink">나</span>}
+                        {isMe && <span className="font-pixel text-[11px] y2k-glow-pink">나</span>}
                         {group.members.length > 1 && (
                           <button
                             onClick={e => { e.stopPropagation(); openMemberDeleteModal(member); }}
@@ -505,10 +505,10 @@ export default function GroupDashboard() {
             className="flex-1 py-3 px-4 text-sm font-semibold transition-all"
             style={activeTab === "expenses" ? {
               background: 'var(--y2k-yellow)', border: '2px solid var(--y2k-black)',
-              fontFamily: 'Galmuri11, monospace', fontSize: '11px',
+              fontFamily: 'Galmuri11, monospace', fontSize: '13px',
             } : {
               background: 'transparent', border: '1px solid var(--y2k-muted)',
-              color: 'var(--y2k-t2)', fontSize: '11px',
+              color: 'var(--y2k-t2)', fontSize: '13px',
             }}
           >
             지출 입력
@@ -518,71 +518,50 @@ export default function GroupDashboard() {
             className="flex-1 py-3 px-4 text-sm font-semibold transition-all flex items-center justify-center gap-2"
             style={activeTab === "settlement" ? {
               background: 'var(--y2k-yellow)', border: '2px solid var(--y2k-black)',
-              fontFamily: 'Galmuri11, monospace', fontSize: '11px',
+              fontFamily: 'Galmuri11, monospace', fontSize: '13px',
             } : {
               background: 'transparent', border: '1px solid var(--y2k-muted)',
-              color: 'var(--y2k-t2)', fontSize: '11px',
+              color: 'var(--y2k-t2)', fontSize: '13px',
             }}
           >
             정산 결과
             {settlements.length > 0 && (
-              <span className="px-1.5 py-0.5 font-pixel text-[9px] text-white rounded" style={{ background: 'var(--y2k-pink)', border: '1px solid var(--y2k-black)' }}>
+              <span className="px-1.5 py-0.5 font-pixel text-[11px] text-white rounded" style={{ background: 'var(--y2k-pink)', border: '1px solid var(--y2k-black)' }}>
                 {settlements.length}
               </span>
             )}
           </button>
         </div>
 
-        {/* 유틸 버튼 */}
-        <div className="flex gap-2 py-3 px-0" style={{ borderBottom: '2px dashed var(--y2k-muted)' }}>
-          <button
-            onClick={downloadExcel}
-            disabled={isDownloading}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-[11px] disabled:opacity-50 transition-all"
-            style={{ background: 'var(--y2k-lime-l)', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}
-          >
-            <span className="y2k-glow-lime">{isDownloading ? '⏳' : '📊'}</span>
-            <span className="y2k-glow-lime">{isDownloading ? '다운로드 중...' : '엑셀 다운로드'}</span>
-          </button>
-          <button
-            onClick={backupAndDelete}
-            disabled={isBackingUp}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-[11px] disabled:opacity-50 transition-all"
-            style={{ background: '#FFE0CC', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}
-          >
-            {isBackingUp ? '⏳ 백업 중...' : '🗃️ 백업 후 삭제'}
-          </button>
-        </div>
-
         {/* ============ 지출 탭 ============ */}
         {activeTab === "expenses" && (
           <div className="pt-4 space-y-4">
-            {/* 지출 추가 폼 */}
+            {/* 1. 지출 추가 폼 */}
             <div className="y2k-card p-5">
-              <p className="font-pixel text-[12px] text-[var(--y2k-black)] mb-4">✦ 새 지출 추가</p>
+              <p className="font-pixel text-[14px] text-[var(--y2k-black)] mb-4">✦ 새 지출 추가</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 내용</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 내용</label>
                   <input type="text" value={expenseForm.title} onChange={e => setExpenseForm(prev => ({ ...prev, title: e.target.value }))} placeholder="예: 숙박비" disabled={isAddingExpense} className="y2k-input disabled:opacity-50" />
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 금액</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 금액</label>
                   <input type="number" value={expenseForm.amount} onChange={e => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))} placeholder="0" disabled={isAddingExpense} className="y2k-input disabled:opacity-50" />
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">결제자</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">결제자</label>
                   <select value={expenseForm.payerId} onChange={e => setExpenseForm(prev => ({ ...prev, payerId: e.target.value }))} disabled={isAddingExpense} className="y2k-input disabled:opacity-50">
                     <option value="">결제자 선택</option>
                     {group.members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 날짜</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 날짜</label>
                   <input type="date" value={expenseForm.date} onChange={e => setExpenseForm(prev => ({ ...prev, date: e.target.value }))} disabled={isAddingExpense} className="y2k-input disabled:opacity-50" />
                 </div>
               </div>
               <div className="mb-4">
-                <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-2">참여자 선택</label>
+                <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-2">참여자 선택</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {group.members.map(member => (
                     <label
@@ -612,22 +591,14 @@ export default function GroupDashboard() {
               </button>
             </div>
 
-            {/* 안내 메시지 */}
-            <div className="y2k-card-cream p-3 flex items-start gap-2">
-              <span className="text-base flex-shrink-0">💡</span>
-              <p className="text-[10px] text-[var(--y2k-t2)] leading-relaxed">
-                잘못 입력해도 괜찮아요! <strong>수정·삭제 버튼</strong>으로 언제든 수정할 수 있어요.
-              </p>
-            </div>
-
-            {/* 지출 내역 */}
+            {/* 2. 지출 내역 */}
             <div>
-              <p className="font-pixel text-[11px] text-[var(--y2k-t2)] mb-3">
+              <p className="font-pixel text-[13px] text-[var(--y2k-t2)] mb-3">
                 지출 내역 <span className="y2k-glow-pink">({group.expenses.length}건)</span>
               </p>
               {group.expenses.length === 0 ? (
                 <div className="y2k-card-cream p-8 text-center">
-                  <p className="font-pixel text-[11px] text-[var(--y2k-t3)]">아직 지출 내역이 없습니다</p>
+                  <p className="font-pixel text-[13px] text-[var(--y2k-t3)]">아직 지출 내역이 없습니다</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -638,7 +609,7 @@ export default function GroupDashboard() {
                       <div key={expense.id} className="y2k-card p-4">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <p className="font-pixel text-[11px] text-[var(--y2k-black)] mb-1">{expense.title}</p>
+                            <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-1">{expense.title}</p>
                             <p className="text-[10px] text-[var(--y2k-t2)]">결제자: {payer?.name}</p>
                             <p className="text-[10px] text-[var(--y2k-t2)]">참여자: {participantNames}</p>
                             <p className="text-[9px] text-[var(--y2k-t3)] mt-0.5">{expense.date}</p>
@@ -658,6 +629,38 @@ export default function GroupDashboard() {
                 </div>
               )}
             </div>
+
+            {/* 3. 안내 메시지 */}
+            <div className="y2k-card-cream p-3 flex items-start gap-2">
+              <span className="text-base flex-shrink-0">💡</span>
+              <p className="text-[10px] text-[var(--y2k-t2)] leading-relaxed">
+                잘못 입력해도 괜찮아요! <strong>수정·삭제 버튼</strong>으로 언제든 수정할 수 있어요.
+              </p>
+            </div>
+
+            {/* 4. 구분선 + 5. 엑셀·삭제 버튼 */}
+            <div>
+              <div className="mb-3" style={{ borderTop: '2px dashed var(--y2k-muted)' }}></div>
+              <div className="flex gap-2">
+                <button
+                  onClick={downloadExcel}
+                  disabled={isDownloading}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-[11px] disabled:opacity-50 transition-all"
+                  style={{ background: 'var(--y2k-lime-l)', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}
+                >
+                  <span className="y2k-glow-lime">{isDownloading ? '⏳' : '📊'}</span>
+                  <span className="y2k-glow-lime">{isDownloading ? '다운로드 중...' : '엑셀 다운로드'}</span>
+                </button>
+                <button
+                  onClick={backupAndDelete}
+                  disabled={isBackingUp}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-[11px] disabled:opacity-50 transition-all"
+                  style={{ background: '#FFE0CC', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}
+                >
+                  {isBackingUp ? '⏳ 백업 중...' : '🗃️ 백업 후 삭제'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -666,7 +669,7 @@ export default function GroupDashboard() {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="y2k-win95 max-w-2xl w-full max-h-[90vh] flex flex-col">
               <div className="y2k-win95-bar flex-shrink-0">
-                <span className="font-pixel text-[9px] text-white">✏️ 지출 수정.exe</span>
+                <span className="font-pixel text-[11px] text-white">✏️ 지출 수정.exe</span>
                 <div className="flex gap-1">
                   <div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div>
                   <div className="y2k-win95-btn" onClick={() => { setShowExpenseEditModal(false); setEditingExpense(null); }}>✕</div>
@@ -675,26 +678,26 @@ export default function GroupDashboard() {
               <div className="bg-white overflow-y-auto p-5 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 내용</label>
+                    <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 내용</label>
                     <input type="text" value={expenseEditForm.title} onChange={e => setExpenseEditForm(prev => ({ ...prev, title: e.target.value }))} disabled={isUpdatingExpense} className="y2k-input disabled:opacity-50" />
                   </div>
                   <div>
-                    <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 금액</label>
+                    <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 금액</label>
                     <input type="number" value={expenseEditForm.amount} onChange={e => setExpenseEditForm(prev => ({ ...prev, amount: e.target.value }))} disabled={isUpdatingExpense} className="y2k-input disabled:opacity-50" />
                   </div>
                   <div>
-                    <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">결제자</label>
+                    <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">결제자</label>
                     <select value={expenseEditForm.payerId} onChange={e => setExpenseEditForm(prev => ({ ...prev, payerId: e.target.value }))} disabled={isUpdatingExpense} className="y2k-input disabled:opacity-50">
                       {group?.members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">지출 날짜</label>
+                    <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">지출 날짜</label>
                     <input type="date" value={expenseEditForm.date} onChange={e => setExpenseEditForm(prev => ({ ...prev, date: e.target.value }))} disabled={isUpdatingExpense} className="y2k-input disabled:opacity-50" />
                   </div>
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-2">참여자 선택</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-2">참여자 선택</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {group?.members.map(member => (
                       <label key={member.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ border: expenseEditForm.participants.includes(member.id) ? '2px solid var(--y2k-pink)' : '2px solid var(--y2k-muted)', background: expenseEditForm.participants.includes(member.id) ? 'var(--y2k-pink-l)' : 'var(--y2k-cream)' }}>
@@ -726,7 +729,7 @@ export default function GroupDashboard() {
             {currentMember && (
               <div className="y2k-win95">
                 <div className="y2k-win95-bar">
-                  <span className="font-pixel text-[9px] text-white">🖥 내 정산 요약.exe</span>
+                  <span className="font-pixel text-[11px] text-white">🖥 내 정산 요약.exe</span>
                   <div className="flex gap-1">
                     <div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div><div className="y2k-win95-btn">✕</div>
                   </div>
@@ -735,18 +738,18 @@ export default function GroupDashboard() {
                   {/* 크롬 배지 + 이름 */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="y2k-chrome-badge px-3 py-1 text-[10px] font-bold text-[var(--y2k-black)]">MY BILL</span>
-                    <span className="font-pixel text-[11px] text-[var(--y2k-black)]">{currentMember.name}</span>
+                    <span className="font-pixel text-[13px] text-[var(--y2k-black)]">{currentMember.name}</span>
                     <span className="text-sm">✨</span>
                   </div>
                   <div className="mb-3" style={{ borderTop: '2px dashed var(--y2k-muted)' }}></div>
 
                   {toSend.length === 0 && toReceive.length === 0 ? (
-                    <p className="text-center py-3 font-pixel text-[11px] y2k-glow-lime">✅ 정산 완료!</p>
+                    <p className="text-center py-3 font-pixel text-[13px] y2k-glow-lime">✅ 정산 완료!</p>
                   ) : (
                     <>
                       {toSend.length > 0 && (
                         <div className="mb-3">
-                          <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-2">💸 보내야 할 돈</p>
+                          <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-2">💸 보내야 할 돈</p>
                           <div className="space-y-1.5">
                             {toSend.map((s, i) => {
                               const toMember = group.members.find(m => m.id === s.to);
@@ -767,7 +770,7 @@ export default function GroupDashboard() {
                       )}
                       {toReceive.length > 0 && (
                         <div className="mb-3">
-                          <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-2">💰 받아야 할 돈</p>
+                          <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-2">💰 받아야 할 돈</p>
                           <div className="space-y-1.5">
                             {toReceive.map((s, i) => {
                               const fromMember = group.members.find(m => m.id === s.from);
@@ -794,13 +797,13 @@ export default function GroupDashboard() {
             {/* 전체 정산 목록 */}
             <div>
               <div className="flex items-center gap-2 py-2 mb-3" style={{ borderTop: '2px dashed var(--y2k-muted)' }}>
-                <p className="font-pixel text-[11px] text-[var(--y2k-t2)]">전체 정산 결과</p>
+                <p className="font-pixel text-[13px] text-[var(--y2k-t2)]">전체 정산 결과</p>
                 <p className="text-[9px] text-[var(--y2k-t3)]">💡 프로필 클릭 → 계좌번호 확인</p>
               </div>
 
               {settlements.length === 0 ? (
                 <div className="y2k-card-cream p-8 text-center">
-                  <p className="font-pixel text-[11px] text-[var(--y2k-t3)]">아직 정산할 내용이 없습니다</p>
+                  <p className="font-pixel text-[13px] text-[var(--y2k-t3)]">아직 정산할 내용이 없습니다</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -812,7 +815,7 @@ export default function GroupDashboard() {
                       <div key={index} className={isMySettlement ? "y2k-card-pink p-4" : "y2k-card p-4"}>
                         {isMySettlement && (
                           <div className="flex justify-end mb-2">
-                            <span className="font-pixel text-[9px] text-white px-2 py-0.5 rounded" style={{ background: 'var(--y2k-pink)', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}>나포함</span>
+                            <span className="font-pixel text-[11px] text-white px-2 py-0.5 rounded" style={{ background: 'var(--y2k-pink)', border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}>나포함</span>
                           </div>
                         )}
                         <div className="flex items-center justify-center gap-4 mb-3">
@@ -848,14 +851,14 @@ export default function GroupDashboard() {
                 <div className="w-14 h-14 rounded-full text-white text-xl font-bold flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: selectedMember.color, border: '2px solid var(--y2k-black)', boxShadow: '2px 2px 0 var(--y2k-black)' }}>
                   {selectedMember.name.charAt(0)}
                 </div>
-                <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-3">
+                <p className="font-pixel text-[16px] text-[var(--y2k-black)] mb-3">
                   {selectedMember.name}
                   {currentMember?.id === selectedMember.id && <span className="ml-2 y2k-glow-pink text-[10px]">(나)</span>}
                 </p>
                 <div className="y2k-card-cream p-3 mb-3 text-left">
-                  <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-1">전화번호</p>
+                  <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-1">전화번호</p>
                   <p className="text-[11px] text-[var(--y2k-t1)] mb-3">{selectedMember.phone}</p>
-                  <p className="font-pixel text-[9px] text-[var(--y2k-t3)] mb-1">계좌번호</p>
+                  <p className="font-pixel text-[11px] text-[var(--y2k-t3)] mb-1">계좌번호</p>
                   <div className="overflow-x-auto rounded p-2" style={{ background: 'white', border: '1px solid var(--y2k-muted)' }}>
                     <p className="font-mono text-[11px] text-[var(--y2k-t1)] whitespace-nowrap">{selectedMember.account}</p>
                   </div>
@@ -878,7 +881,7 @@ export default function GroupDashboard() {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
             <div className="y2k-win95 max-w-md w-full">
               <div className="y2k-win95-bar">
-                <span className="font-pixel text-[9px] text-white">✏️ 정보 수정.exe</span>
+                <span className="font-pixel text-[11px] text-white">✏️ 정보 수정.exe</span>
                 <div className="flex gap-1">
                   <div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div>
                   <div className="y2k-win95-btn" onClick={() => { setShowEditModal(false); setEditingMember(null); }}>✕</div>
@@ -887,18 +890,18 @@ export default function GroupDashboard() {
               <div className="bg-white p-5 space-y-3">
                 <div className="text-center mb-2">
                   <div className="w-12 h-12 rounded-full text-white text-lg font-bold flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: editingMember.color, border: '2px solid var(--y2k-black)' }}>{editingMember.name.charAt(0)}</div>
-                  <p className="font-pixel text-[11px] text-[var(--y2k-black)]">{editingMember.name} 정보 수정</p>
+                  <p className="font-pixel text-[13px] text-[var(--y2k-black)]">{editingMember.name} 정보 수정</p>
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">이름</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">이름</label>
                   <input type="text" value={editForm.name} onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))} disabled={isUpdating} className="y2k-input disabled:opacity-50" />
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">전화번호</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">전화번호</label>
                   <input type="tel" value={editForm.phone} onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))} disabled={isUpdating} className="y2k-input disabled:opacity-50" />
                 </div>
                 <div>
-                  <label className="font-pixel text-[9px] text-[var(--y2k-t2)] block mb-1">계좌번호</label>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">계좌번호</label>
                   <div className="relative">
                     <input type="text" value={editForm.account} onChange={e => setEditForm(prev => ({ ...prev, account: e.target.value }))} placeholder="은행명 계좌번호" disabled={isUpdating} className="y2k-input pr-10 disabled:opacity-50" />
                     <button type="button" onClick={() => { if (editForm.account) { navigator.clipboard.writeText(editForm.account); alert("계좌번호가 복사되었습니다!"); } }} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--y2k-t3)] hover:text-[var(--y2k-pink)]">📋</button>
@@ -923,11 +926,11 @@ export default function GroupDashboard() {
             <div className="y2k-card max-w-md w-full p-5">
               <div className="text-center">
                 <div className="text-5xl mb-3">⚠️</div>
-                <p className="font-pixel text-[12px] text-[var(--y2k-black)] mb-4">멤버 제외 확인</p>
+                <p className="font-pixel text-[14px] text-[var(--y2k-black)] mb-4">멤버 제외 확인</p>
                 <div className="w-14 h-14 rounded-full text-white text-xl font-bold flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: memberToDelete.color, border: '2px solid var(--y2k-black)' }}>{memberToDelete.name.charAt(0)}</div>
                 <p className="text-[11px] text-[var(--y2k-t2)] mb-4"><strong className="text-[var(--y2k-black)]">{memberToDelete.name}</strong>님을 그룹에서 제외하시겠습니까?</p>
                 <div className="y2k-card-cream p-3 mb-4 text-left">
-                  <p className="font-pixel text-[9px] text-[var(--y2k-pink)] mb-1">🚨 주의사항</p>
+                  <p className="font-pixel text-[11px] text-[var(--y2k-pink)] mb-1">🚨 주의사항</p>
                   <p className="text-[9px] text-[var(--y2k-t2)] leading-relaxed">• 제외된 후에는 되돌릴 수 없습니다<br/>• 모든 지출 내역이 재계산됩니다</p>
                 </div>
                 <div className="flex gap-3">
@@ -948,11 +951,11 @@ export default function GroupDashboard() {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
             <div className="y2k-win95 max-w-2xl w-full max-h-[80vh] flex flex-col">
               <div className="y2k-win95-bar flex-shrink-0">
-                <span className="font-pixel text-[9px] text-white">💳 새로운 결제자 선택.exe</span>
+                <span className="font-pixel text-[11px] text-white">💳 새로운 결제자 선택.exe</span>
                 <div className="flex gap-1"><div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div><div className="y2k-win95-btn">✕</div></div>
               </div>
               <div className="bg-white overflow-y-auto p-5">
-                <p className="font-pixel text-[11px] text-[var(--y2k-black)] mb-1">새로운 결제자 선택</p>
+                <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-1">새로운 결제자 선택</p>
                 <p className="text-[10px] text-[var(--y2k-t2)] mb-4"><strong>{memberToDelete.name}</strong>님이 결제자였던 지출들의 새로운 결제자를 선택해주세요</p>
                 <div className="space-y-4 mb-5">
                   {expensesNeedingNewPayer.map(expense => {
@@ -961,7 +964,7 @@ export default function GroupDashboard() {
                       <div key={expense.id} className="y2k-card-cream p-4">
                         <div className="flex justify-between mb-3">
                           <div>
-                            <p className="font-pixel text-[10px] text-[var(--y2k-black)]">{expense.title}</p>
+                            <p className="font-pixel text-[12px] text-[var(--y2k-black)]">{expense.title}</p>
                             <p className="text-[9px] text-[var(--y2k-t3)]">{expense.date}</p>
                           </div>
                           <p className="font-bold text-[var(--y2k-black)]">{expense.amount.toLocaleString()}원</p>
