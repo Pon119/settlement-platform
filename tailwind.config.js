@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        pixel: ['Galmuri11', 'monospace'],
+        pixelSm: ['Galmuri9', 'monospace'],
+      },
       colors: {
         'warm-dark': '#2d1b1b',
         'warm-gray': '#5d4e4e', 

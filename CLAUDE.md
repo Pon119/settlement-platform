@@ -117,15 +117,25 @@ Firebase Auth 로그인 없음. "내가 누구인지"는 `localStorage`의 `grou
 
 ---
 
-## 7. 스타일 컨벤션
+## 7. 스타일 컨벤션 (Y2K / Neo-Brutalism)
 
-- Global background: 연한 핑크-보라 그라디언트 (`#FFF0F5 → #F8EEFF → #FFF5EE`), `body`에 `globals.css`로 적용
-- CSS custom properties (`globals.css`): `--color-primary: #D4537E`, `--color-primary-light`, `--color-primary-border`, `--color-primary-dark`, `--color-bg-app`, `--color-card`
-- Custom Tailwind utilities: `text-warm-dark`, `text-warm-gray`, `text-soft-brown`, `glass-effect`, `pink-gradient`
-- Primary interactive color: `bg-[#D4537E] hover:bg-[#C44070]` (버튼), `border-[#D4537E]` (포커스/선택)
-- 카드 스타일: `bg-white rounded-2xl border border-gray-100 shadow-sm`
-- 입력 필드: `border border-gray-200 rounded-xl focus:border-[#D4537E] focus:ring-2 focus:ring-pink-50`
-- 탭 네비게이션: 언더라인 스타일 (`border-b-2 border-[#D4537E]`)
+- **디자인 테마**: Y2K + 네오 브루탈리즘 — 픽셀 폰트, 두꺼운 검정 테두리, 오프셋 그림자, 크림 배경
+- **전역 배경**: `var(--y2k-cream): #FAF9F0` + `.y2k-noise` (SVG fractalNoise 그레인)
+- **폰트**: `font-pixel` = Galmuri11, `font-pixelSm` = Galmuri9 (한국어 픽셀 비트맵)
+- **Y2K CSS 토큰** (`globals.css :root`):
+  - 배경: `--y2k-cream`, `--y2k-card`, `--y2k-black`, `--y2k-muted`
+  - 강조색: `--y2k-yellow: #FFE234`, `--y2k-pink: #FF3C8E`, `--y2k-lime: #AAFF00`, `--y2k-blue: #4FC3F7`
+  - 파생: `--y2k-pink-l/b`, `--y2k-lime-l`, `--y2k-blue-l`, `--y2k-yellow2`
+  - 텍스트: `--y2k-t1/t2/t3`
+  - 특수: `--chrome` (메탈릭 그라디언트), `--win95` (Win95 타이틀바 파란 그라디언트)
+- **카드**: `.y2k-card` (이중 테두리+오프셋 그림자), `.y2k-card-cream` (크림+대시), `.y2k-card-pink`
+- **버튼**: `.y2k-btn` (노란 젤리+3D 그림자), `.y2k-btn-out` (흰색 아웃라인)
+- **입력**: `.y2k-input` (크림 bg, 검정 border 2px, 오프셋 그림자, 포커스 시 핑크)
+- **Win95 모달**: `.y2k-win95` + `.y2k-win95-bar` (파란 그라디언트 타이틀바) + `.y2k-win95-btn`
+- **마키**: `.y2k-marquee` + `.y2k-marquee-inner` (검정 띠 + CSS animation, 텍스트 2배 복사로 seamless)
+- **네온 글로우**: `.y2k-glow-pink`, `.y2k-glow-lime` (text-shadow)
+- **아이콘 박스**: `.y2k-icon-box` (28×28 rounded-9px, 컬러 그라디언트 배경)
+- **레거시 호환**: `.glass-effect`, `.pink-gradient`, `.text-warm-dark/gray/soft-brown` 유지
 - 새 색상·간격 추가 시 `globals.css`에 토큰으로 먼저 추가 후 참조
 
 ---
@@ -172,6 +182,7 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 | 2026-05-09 | 기술부채 해소: `lib/settlement.ts`, `lib/session.ts` 분리 | `calculateSettlement` 및 세션 헬퍼 중복 제거 완료; `clearMemberSession`에서 React 상태 의존성 제거하여 순수 lib 함수화 |
 | 2026-05-10 | feat: 내 정산 요약 카드 및 항목 하이라이트 추가 | 정산 탭 상단에 로그인 사용자 기준 보낼 돈/받을 돈 요약 카드; 전체 목록에서 나 포함 항목 핑크 하이라이트 + 뱃지 |
 | 2026-05-10 | design: 전체 UI 리디자인 — 모던 정산 앱 스타일 적용 | globals.css에 CSS 커스텀 프로퍼티(`--color-primary: #D4537E` 등) 추가; 배경 경량화; 모든 페이지 카드 white+border+shadow로 교체; 탭 언더라인 스타일; 입력 필드 clean border; 버튼 `#D4537E` 계열 통일 |
+| 2026-05-10 | design: Y2K 네오 브루탈리즘 전면 리디자인 | Galmuri 픽셀폰트, Win95 카드, 마키 띠, 네온글로우, 젤리 버튼 적용 — 전체 4개 페이지(landing/create/[id]/invite) + globals.css 완전 교체; lib/* 로직 무변경 |
 
 ---
 

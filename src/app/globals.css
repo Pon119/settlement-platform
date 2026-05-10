@@ -1,50 +1,219 @@
+@import 'galmuri/dist/galmuri.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --color-primary: #D4537E;
-    --color-primary-light: #FDF2F8;
-    --color-primary-border: #F9D0E2;
-    --color-primary-dark: #B83D66;
-    --color-bg-app: linear-gradient(150deg, #FFF0F5 0%, #F8EEFF 50%, #FFF5EE 100%);
-    --color-card: #ffffff;
+    /* Y2K 컬러 시스템 */
+    --y2k-cream:   #FAF9F0;
+    --y2k-card:    #FFFFFF;
+    --y2k-black:   #1A1A1A;
+    --y2k-muted:   #D8D4C8;
+    --y2k-yellow:  #FFE234;
+    --y2k-yellow2: #FFF4A3;
+    --y2k-pink:    #FF3C8E;
+    --y2k-pink-l:  #FFE8F3;
+    --y2k-pink-b:  #FFB3D6;
+    --y2k-lime:    #AAFF00;
+    --y2k-lime-l:  #EEFFD6;
+    --y2k-blue:    #4FC3F7;
+    --y2k-blue-l:  #E0F7FA;
+    --y2k-t1:      #1A1A1A;
+    --y2k-t2:      #5A5850;
+    --y2k-t3:      #9A9888;
+    --chrome: linear-gradient(180deg,#F0F0F0 0%,#C8C8C8 45%,#A0A0A0 50%,#D0D0D0 100%);
+    --win95:  linear-gradient(90deg,#000080 0%,#1084D0 100%);
+
+    /* 레거시 호환 */
+    --color-primary: #FF3C8E;
+    --color-primary-light: #FFE8F3;
+    --color-primary-border: #FFB3D6;
+    --color-primary-dark: #CC2070;
   }
 
   body {
-    background: linear-gradient(150deg, #FFF0F5 0%, #F8EEFF 50%, #FFF5EE 100%);
+    background: var(--y2k-cream) !important;
     min-height: 100vh;
-    color: #1A1A2E;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    color: var(--y2k-t1);
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
 
 @layer utilities {
+  /* 노이즈 그레인 배경 */
+  .y2k-noise {
+    position: relative;
+  }
+  .y2k-noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+  }
+  .y2k-noise > * { position: relative; z-index: 1; }
+
+  /* 스티커 카드 (이중 테두리) */
+  .y2k-card {
+    background: var(--y2k-card);
+    border-radius: 12px;
+    border: 2px solid var(--y2k-black);
+    outline: 3px solid white;
+    outline-offset: -5px;
+    box-shadow: 3px 3px 0 var(--y2k-black);
+  }
+  .y2k-card-cream {
+    background: var(--y2k-cream);
+    border-radius: 12px;
+    border: 2px dashed var(--y2k-muted);
+  }
+  .y2k-card-pink {
+    background: var(--y2k-pink-l);
+    border-radius: 12px;
+    border: 2px solid var(--y2k-black);
+    outline: 3px solid white;
+    outline-offset: -5px;
+    box-shadow: 3px 3px 0 var(--y2k-black);
+  }
+
+  /* 젤리 버튼 (primary) */
+  .y2k-btn {
+    background: linear-gradient(135deg, #FFE234 0%, #FFD000 100%);
+    border: 2px solid var(--y2k-black);
+    border-radius: 50px;
+    box-shadow: 0 4px 0 #B8A000, 0 5px 0 var(--y2k-black);
+    font-weight: 700;
+    color: var(--y2k-black);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .y2k-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #B8A000, 0 3px 0 var(--y2k-black);
+  }
+  .y2k-btn:hover {
+    background: linear-gradient(135deg, #FFD000 0%, #FFC400 100%);
+  }
+
+  /* 젤리 버튼 (outline) */
+  .y2k-btn-out {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,240,240,0.7));
+    border: 2px solid var(--y2k-black);
+    border-radius: 50px;
+    box-shadow: 0 3px 0 #999, 0 4px 0 var(--y2k-black);
+    font-weight: 600;
+    color: var(--y2k-black);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .y2k-btn-out:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #999, 0 2px 0 var(--y2k-black);
+  }
+
+  /* 크롬 메탈릭 배지 */
+  .y2k-chrome-badge {
+    background: var(--chrome);
+    border: 1.5px solid #888;
+    border-radius: 50px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+
+  /* 윈도우95 래퍼 */
+  .y2k-win95 {
+    border: 2px solid var(--y2k-black);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--y2k-black);
+  }
+  .y2k-win95-bar {
+    background: var(--win95);
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .y2k-win95-btn {
+    width: 14px; height: 14px;
+    border-radius: 2px;
+    border: 1px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+
+  /* 네온 글로우 */
+  .y2k-glow-pink {
+    color: var(--y2k-pink);
+    text-shadow: 0 0 8px rgba(255,60,142,0.5), 0 0 16px rgba(255,60,142,0.25);
+  }
+  .y2k-glow-lime {
+    color: #55AA00;
+    text-shadow: 0 0 8px rgba(170,255,0,0.4);
+  }
+
+  /* 마키 */
+  .y2k-marquee {
+    overflow: hidden;
+    background: var(--y2k-black);
+    border-top: 2px solid var(--y2k-black);
+    border-bottom: 2px solid var(--y2k-black);
+    padding: 5px 0;
+  }
+  .y2k-marquee-inner {
+    display: flex;
+    animation: marquee 12s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* 3D 푸딩 아이콘 박스 */
+  .y2k-icon-box {
+    width: 28px; height: 28px;
+    border-radius: 9px;
+    border: 2px solid var(--y2k-black);
+    filter: drop-shadow(2px 2px 0 var(--y2k-black));
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* 인풋 스타일 */
+  .y2k-input {
+    background: var(--y2k-cream);
+    border: 2px solid var(--y2k-black);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--y2k-black);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--y2k-t1);
+    width: 100%;
+    padding: 10px 14px;
+    outline: none;
+    transition: box-shadow 0.1s;
+  }
+  .y2k-input:focus {
+    box-shadow: 2px 2px 0 var(--y2k-pink);
+    border-color: var(--y2k-pink);
+  }
+  .y2k-input::placeholder {
+    color: var(--y2k-t3);
+  }
+
+  /* 레거시 유틸리티 (기존 코드 호환) */
   .glass-effect {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.9);
   }
-
   .pink-gradient {
-    background: linear-gradient(135deg, #D4537E, #E87BA0);
+    background: linear-gradient(135deg, #FF3C8E, #FF80B5);
   }
-
-  /* 텍스트 색상 유틸리티 클래스들 */
-  .text-warm-dark {
-    color: #1A1A2E;
-  }
-
-  .text-warm-gray {
-    color: #6B7280;
-  }
-
-  .text-soft-brown {
-    color: #9CA3AF;
-  }
-
-  .text-contrast {
-    color: #0A0A14;
-  }
+  .text-warm-dark { color: var(--y2k-t1); }
+  .text-warm-gray { color: var(--y2k-t2); }
+  .text-soft-brown { color: var(--y2k-t3); }
+  .text-contrast { color: #0A0A0A; }
 }
