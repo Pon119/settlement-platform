@@ -119,9 +119,13 @@ Firebase Auth 로그인 없음. "내가 누구인지"는 `localStorage`의 `grou
 
 ## 7. 스타일 컨벤션
 
-- Global background: warm peach-salmon gradient, `body`에 `globals.css`로 적용
+- Global background: 연한 핑크-보라 그라디언트 (`#FFF0F5 → #F8EEFF → #FFF5EE`), `body`에 `globals.css`로 적용
+- CSS custom properties (`globals.css`): `--color-primary: #D4537E`, `--color-primary-light`, `--color-primary-border`, `--color-primary-dark`, `--color-bg-app`, `--color-card`
 - Custom Tailwind utilities: `text-warm-dark`, `text-warm-gray`, `text-soft-brown`, `glass-effect`, `pink-gradient`
-- Primary interactive color: `from-pink-400 to-pink-500`
+- Primary interactive color: `bg-[#D4537E] hover:bg-[#C44070]` (버튼), `border-[#D4537E]` (포커스/선택)
+- 카드 스타일: `bg-white rounded-2xl border border-gray-100 shadow-sm`
+- 입력 필드: `border border-gray-200 rounded-xl focus:border-[#D4537E] focus:ring-2 focus:ring-pink-50`
+- 탭 네비게이션: 언더라인 스타일 (`border-b-2 border-[#D4537E]`)
 - 새 색상·간격 추가 시 `globals.css`에 토큰으로 먼저 추가 후 참조
 
 ---
@@ -167,6 +171,7 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 | 2026-05-09 | CLAUDE.md 전면 재작성 (포트폴리오 MD 구조 반영) | 기술부채 명시, 개발 규칙·이력 테이블 추가 |
 | 2026-05-09 | 기술부채 해소: `lib/settlement.ts`, `lib/session.ts` 분리 | `calculateSettlement` 및 세션 헬퍼 중복 제거 완료; `clearMemberSession`에서 React 상태 의존성 제거하여 순수 lib 함수화 |
 | 2026-05-10 | feat: 내 정산 요약 카드 및 항목 하이라이트 추가 | 정산 탭 상단에 로그인 사용자 기준 보낼 돈/받을 돈 요약 카드; 전체 목록에서 나 포함 항목 핑크 하이라이트 + 뱃지 |
+| 2026-05-10 | design: 전체 UI 리디자인 — 모던 정산 앱 스타일 적용 | globals.css에 CSS 커스텀 프로퍼티(`--color-primary: #D4537E` 등) 추가; 배경 경량화; 모든 페이지 카드 white+border+shadow로 교체; 탭 언더라인 스타일; 입력 필드 clean border; 버튼 `#D4537E` 계열 통일 |
 
 ---
 
@@ -175,4 +180,4 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 - **배포**: https://jeongsanheabar.vercel.app (정상 운영 중)
 - **배포 방식**: Vercel — main 브랜치 push → 자동 배포
 - **인증**: 없음 (localStorage 세션)
-- **알려진 이슈**: `calculateSettlement` 및 세션 헬퍼 중복 (6번 기술부채 참고)
+- **알려진 이슈**: 없음 (기술부채 해소 완료)

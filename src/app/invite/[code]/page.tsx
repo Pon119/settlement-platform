@@ -25,10 +25,10 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState('')
-  
+
   // 참여 폼 표시 여부
   const [showJoinForm, setShowJoinForm] = useState(false)
-  
+
   // ✅ 새로운 state: 멤버 선택 모달
   const [showMemberSelectModal, setShowMemberSelectModal] = useState(false)
   const [existingMembership, setExistingMembership] = useState<MemberSession | null>(null)
@@ -67,9 +67,9 @@ export default function InvitePage() {
           collection(db, 'groups'),
           where('inviteCode', '==', inviteCode)
         )
-        
+
         const querySnapshot = await getDocs(q)
-        
+
         if (querySnapshot.empty) {
           setError('존재하지 않거나 만료된 초대 코드입니다.')
           setLoading(false)
@@ -99,7 +99,7 @@ export default function InvitePage() {
         }
 
         setGroup(groupData)
-        
+
         // ✅ 기존 멤버십 확인
         const existingSession = getMemberSession(groupData.id)
         if (existingSession) {
@@ -107,7 +107,7 @@ export default function InvitePage() {
           const memberStillExists = groupData.members.some(
             m => m.id === existingSession.memberId
           )
-          
+
           if (memberStillExists) {
             setExistingMembership(existingSession)
             console.log('✅ 기존 멤버십 발견:', existingSession)
@@ -117,7 +117,7 @@ export default function InvitePage() {
             setExistingMembership(null)
           }
         }
-        
+
       } catch (error) {
         console.error('❌ 그룹 검색 실패:', error)
         setError('그룹 정보를 불러오는 중 오류가 발생했습니다.')
@@ -132,18 +132,18 @@ export default function InvitePage() {
   // ✅ 기존 멤버로 입장하기
   const enterAsExistingMember = () => {
     if (!group || !selectedMemberId === null) return
-    
+
     const selectedMember = group.members.find(m => m.id === selectedMemberId)
     if (!selectedMember) {
       alert('선택한 멤버를 찾을 수 없습니다.')
       return
     }
-    
+
     // 세션 정보 저장
     saveMemberSession(group.id, selectedMember.id, selectedMember.name)
-    
+
     alert(`👋 ${selectedMember.name}님으로 입장합니다!`)
-    
+
     // 그룹 대시보드로 이동
     router.push(`/groups/${group.id}`)
   }
@@ -151,7 +151,7 @@ export default function InvitePage() {
   // ✅ 빠른 재입장 (마지막으로 사용한 멤버로)
   const quickEnter = () => {
     if (!group || !existingMembership) return
-    
+
     const member = group.members.find(m => m.id === existingMembership.memberId)
     if (!member) {
       alert('이전에 사용한 멤버 정보를 찾을 수 없습니다.')
@@ -159,7 +159,7 @@ export default function InvitePage() {
       setExistingMembership(null)
       return
     }
-    
+
     alert(`👋 ${member.name}님으로 입장합니다!`)
     router.push(`/groups/${group.id}`)
   }
@@ -186,8 +186,8 @@ export default function InvitePage() {
     }
 
     // 이미 참여한 멤버인지 확인
-    const existingMember = group.members.find(m => 
-      m.name.toLowerCase() === name.toLowerCase().trim() || 
+    const existingMember = group.members.find(m =>
+      m.name.toLowerCase() === name.toLowerCase().trim() ||
       m.phone === phone.trim()
     )
 
@@ -220,7 +220,7 @@ export default function InvitePage() {
 
       // ✅ 새로 추가된 멤버의 ID 찾기 (마지막 멤버)
       const newMemberId = updatedMembers.length - 1
-      
+
       // ✅ 세션 정보 저장
       saveMemberSession(group.id, newMemberId, name.trim())
 
@@ -242,7 +242,7 @@ export default function InvitePage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4537E] mx-auto mb-4"></div>
           <div className="text-warm-dark text-xl">초대 정보를 확인하는 중...</div>
         </div>
       </div>
@@ -257,9 +257,9 @@ export default function InvitePage() {
           <div className="text-6xl mb-6">😕</div>
           <h1 className="text-2xl font-bold text-warm-dark mb-4">초대 링크 오류</h1>
           <p className="text-warm-gray mb-6">{error}</p>
-          <Link 
-            href="/" 
-            className="inline-block px-6 py-3 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-lg font-semibold hover:from-pink-500 hover:to-pink-600 transition-all"
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-[#D4537E] hover:bg-[#C44070] text-white rounded-xl font-semibold transition-all"
           >
             새 그룹 만들기
           </Link>
@@ -278,8 +278,8 @@ export default function InvitePage() {
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-4xl font-bold text-warm-dark mb-2">
+          <div className="text-5xl mb-4">🎉</div>
+          <h1 className="text-3xl font-bold text-warm-dark mb-2">
             그룹 초대
           </h1>
           <p className="text-warm-gray">
@@ -288,18 +288,18 @@ export default function InvitePage() {
         </div>
 
         {/* 그룹 정보 - 항상 표시 */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl mb-8">
-          <div className="text-center mb-6">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md mb-6">
+          <div className="text-center mb-5">
             <h2 className="text-2xl font-bold text-warm-dark mb-2">
               📊 {group.name}
             </h2>
             <p className="text-warm-gray mb-4">{group.description}</p>
-            
+
             {/* 현재 멤버 표시 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4">
               {group.members.map((member, index) => (
-                <div key={index} className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full border border-white/30">
-                  <div 
+                <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-200">
+                  <div
                     className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
                     style={{ backgroundColor: member.color }}
                   >
@@ -309,7 +309,7 @@ export default function InvitePage() {
                 </div>
               ))}
             </div>
-            
+
             <p className="text-sm text-warm-gray">
               현재 {group.members.length}명 참여 중 (최대 {group.maxMembers}명)
             </p>
@@ -317,22 +317,22 @@ export default function InvitePage() {
 
           {/* ✅ 기존 멤버십 표시 */}
           {existingMembership && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mt-4 p-4 bg-pink-50 border border-pink-200 rounded-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">👋</div>
                   <div>
-                    <div className="text-sm text-blue-800 font-semibold">
+                    <div className="text-sm text-[#D4537E] font-semibold">
                       이전에 <strong>{existingMembership.memberName}</strong>님으로 참여하셨어요
                     </div>
-                    <div className="text-xs text-blue-600">
+                    <div className="text-xs text-pink-400">
                       {new Date(existingMembership.timestamp).toLocaleDateString('ko-KR')}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={() => { clearMemberSession(group.id); setExistingMembership(null); }}
-                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  className="text-xs text-gray-400 hover:text-gray-600 underline"
                 >
                   삭제
                 </button>
@@ -341,24 +341,24 @@ export default function InvitePage() {
           )}
         </div>
 
-        {/* ✅ 버튼 영역 개선 */}
+        {/* ✅ 버튼 영역 */}
         {!showJoinForm && (
-          <div className="space-y-4 mb-8">
+          <div className="space-y-3 mb-6">
             {/* 기존 멤버십이 있는 경우 */}
             {existingMembership && (
               <div className="space-y-3">
                 {/* 빠른 입장 버튼 */}
                 <button
                   onClick={quickEnter}
-                  className="w-full px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                  className="w-full px-8 py-4 bg-[#D4537E] hover:bg-[#C44070] text-white rounded-xl font-bold text-lg transition-all shadow-md"
                 >
                   👋 {existingMembership.memberName}님으로 빠른 입장
                 </button>
-                
+
                 {/* 다른 멤버로 입장 버튼 */}
                 <button
                   onClick={() => setShowMemberSelectModal(true)}
-                  className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                  className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all shadow-md"
                 >
                   🔄 다른 멤버로 입장하기
                 </button>
@@ -369,7 +369,7 @@ export default function InvitePage() {
             {!existingMembership && group.members.length > 0 && (
               <button
                 onClick={() => setShowMemberSelectModal(true)}
-                className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                className="w-full px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-lg transition-all shadow-md"
               >
                 🙋 이미 참여했어요
               </button>
@@ -378,20 +378,20 @@ export default function InvitePage() {
             {/* 새로 참여하기 버튼 */}
             <button
               onClick={() => setShowJoinForm(true)}
-              className="w-full px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg"
+              className="w-full px-8 py-4 bg-[#D4537E] hover:bg-[#C44070] text-white rounded-xl font-bold text-lg transition-all shadow-md"
             >
               ✨ 새로 참여하기
             </button>
 
             {/* 홈으로 버튼 */}
-            <Link 
+            <Link
               href="/"
-              className="block w-full px-8 py-4 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg text-center"
+              className="block w-full px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-lg transition-all text-center"
             >
               🏠 홈으로
             </Link>
 
-            <p className="text-warm-gray text-sm text-center mt-4">
+            <p className="text-warm-gray text-sm text-center mt-2">
               그룹을 먼저 확인해보세요. 필요할 때 참여하시면 돼요!
             </p>
           </div>
@@ -399,8 +399,8 @@ export default function InvitePage() {
 
         {/* ✅ 멤버 선택 모달 */}
         {showMemberSelectModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl">
               <div className="text-center mb-6">
                 <div className="text-4xl mb-3">🙋</div>
                 <h3 className="text-xl font-bold text-warm-dark mb-2">
@@ -411,13 +411,13 @@ export default function InvitePage() {
                 </p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 mb-6">
                 {group.members.map((member) => (
                   <label
                     key={member.id}
-                    className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
                       selectedMemberId === member.id
-                        ? 'border-pink-400 bg-pink-50'
+                        ? 'border-[#D4537E] bg-pink-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
@@ -443,7 +443,7 @@ export default function InvitePage() {
                         {member.phone}
                       </div>
                       {existingMembership?.memberId === member.id && (
-                        <div className="text-xs text-blue-600 font-medium mt-1">
+                        <div className="text-xs text-[#D4537E] font-medium mt-0.5">
                           ✓ 마지막으로 사용
                         </div>
                       )}
@@ -458,14 +458,14 @@ export default function InvitePage() {
                     setShowMemberSelectModal(false)
                     setSelectedMemberId(null)
                   }}
-                  className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-lg font-semibold transition-all"
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all"
                 >
                   취소
                 </button>
                 <button
                   onClick={enterAsExistingMember}
                   disabled={selectedMemberId === null}
-                  className="flex-1 py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-[#D4537E] hover:bg-[#C44070] text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   입장하기
                 </button>
@@ -476,7 +476,7 @@ export default function InvitePage() {
 
         {/* 참여 폼 - 토글로 표시/숨김 */}
         {showJoinForm && (
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-xl">
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-md">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-warm-dark">
                 새 멤버로 참여하기
@@ -486,16 +486,16 @@ export default function InvitePage() {
                   setShowJoinForm(false)
                   setMemberInfo({ name: '', phone: '', account: '' })
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold transition-colors"
                 title="닫기"
               >
                 ×
               </button>
             </div>
-            
-            <div className="space-y-6">
+
+            <div className="space-y-5">
               <div>
-                <label className="block text-warm-dark font-semibold mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   이름 *
                 </label>
                 <input
@@ -504,12 +504,12 @@ export default function InvitePage() {
                   onChange={(e) => setMemberInfo(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="이름을 입력해주세요"
                   disabled={joining}
-                  className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:border-[#D4537E] focus:ring-2 focus:ring-pink-50 focus:outline-none transition-colors text-warm-dark placeholder-gray-400 disabled:opacity-50"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-warm-dark font-semibold mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   전화번호 *
                 </label>
                 <input
@@ -518,14 +518,14 @@ export default function InvitePage() {
                   onChange={(e) => setMemberInfo(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="010-1234-5678"
                   disabled={joining}
-                  className="w-full px-4 py-3 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:border-[#D4537E] focus:ring-2 focus:ring-pink-50 focus:outline-none transition-colors text-warm-dark placeholder-gray-400 disabled:opacity-50"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-warm-dark font-semibold mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   계좌번호 *
-                  <span className="text-sm text-warm-gray font-normal ml-2">(은행명 포함)</span>
+                  <span className="text-xs text-gray-400 font-normal ml-2">(은행명 포함)</span>
                 </label>
                 <div className="relative">
                   <input
@@ -534,23 +534,23 @@ export default function InvitePage() {
                     onChange={(e) => setMemberInfo(prev => ({ ...prev, account: e.target.value }))}
                     placeholder="카카오뱅크 3333-01-1234567890"
                     disabled={joining}
-                    className="w-full px-4 py-3 pr-16 border-2 border-white/30 rounded-lg bg-white/90 backdrop-blur-sm focus:border-pink-400 focus:outline-none transition-colors text-warm-dark placeholder-warm-gray disabled:opacity-50 text-sm sm:text-base overflow-x-auto"
+                    className="w-full px-4 py-3 pr-16 border border-gray-200 rounded-xl bg-white focus:border-[#D4537E] focus:ring-2 focus:ring-pink-50 focus:outline-none transition-colors text-warm-dark placeholder-gray-400 disabled:opacity-50 text-sm sm:text-base overflow-x-auto"
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-white/80 px-1 rounded">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-white px-1 rounded">
                     {memberInfo.account.length}자
                   </div>
                 </div>
-                <p className="text-xs text-warm-gray mt-2">
+                <p className="text-xs text-gray-400 mt-2">
                   💡 정산 완료 후 송금받을 계좌번호를 한 줄로 입력해주세요<br/>
                   긴 계좌번호는 입력창에서 좌우 스크롤로 확인 가능 (나중에 수정 가능)
                 </p>
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={joinGroup}
                   disabled={joining}
-                  className="flex-1 py-4 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="flex-1 py-4 bg-[#D4537E] hover:bg-[#C44070] text-white rounded-xl font-bold text-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {joining ? (
                     <span className="flex items-center justify-center gap-2">
@@ -567,7 +567,7 @@ export default function InvitePage() {
                     setMemberInfo({ name: '', phone: '', account: '' })
                   }}
                   disabled={joining}
-                  className="flex-1 py-4 bg-gray-200 hover:bg-gray-300 text-warm-dark rounded-xl font-semibold transition-all disabled:opacity-50"
+                  className="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all disabled:opacity-50"
                 >
                   취소
                 </button>
@@ -578,8 +578,8 @@ export default function InvitePage() {
 
         {/* 하단 링크 */}
         <div className="text-center mt-8">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-warm-gray hover:text-warm-dark text-sm transition-colors"
           >
             또는 새로운 그룹 만들기 →

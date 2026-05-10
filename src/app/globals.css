@@ -3,43 +3,48 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary: #D4537E;
+    --color-primary-light: #FDF2F8;
+    --color-primary-border: #F9D0E2;
+    --color-primary-dark: #B83D66;
+    --color-bg-app: linear-gradient(150deg, #FFF0F5 0%, #F8EEFF 50%, #FFF5EE 100%);
+    --color-card: #ffffff;
+  }
+
   body {
-    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    background: linear-gradient(150deg, #FFF0F5 0%, #F8EEFF 50%, #FFF5EE 100%);
     min-height: 100vh;
-    color: #2d1b1b; /* 따뜻한 다크브라운 - 눈에 편안함 */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1A1A2E;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
   }
 }
 
 @layer utilities {
   .glass-effect {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
   }
-  
+
   .pink-gradient {
-    background: linear-gradient(45deg, #ff9a9e, #fecfef);
-  }
-  
-  .pink-gradient-hover:hover {
-    background: linear-gradient(45deg, #ff8a8e, #fedcef);
+    background: linear-gradient(135deg, #D4537E, #E87BA0);
   }
 
   /* 텍스트 색상 유틸리티 클래스들 */
   .text-warm-dark {
-    color: #2d1b1b; /* 기본 텍스트 - 따뜻한 다크브라운 */
+    color: #1A1A2E;
   }
-  
+
   .text-warm-gray {
-    color: #5d4e4e; /* 부제목용 - 부드러운 회갈색 */
+    color: #6B7280;
   }
-  
+
   .text-soft-brown {
-    color: #8b6f6f; /* 설명글용 - 연한 브라운 */
+    color: #9CA3AF;
   }
-  
+
   .text-contrast {
-    color: #1a1a1a; /* 강조용 - 진한 색 */
+    color: #0A0A14;
   }
 }
