@@ -183,6 +183,7 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 | 2026-05-10 | feat: 내 정산 요약 카드 및 항목 하이라이트 추가 | 정산 탭 상단에 로그인 사용자 기준 보낼 돈/받을 돈 요약 카드; 전체 목록에서 나 포함 항목 핑크 하이라이트 + 뱃지 |
 | 2026-05-10 | design: 전체 UI 리디자인 — 모던 정산 앱 스타일 적용 | globals.css에 CSS 커스텀 프로퍼티(`--color-primary: #D4537E` 등) 추가; 배경 경량화; 모든 페이지 카드 white+border+shadow로 교체; 탭 언더라인 스타일; 입력 필드 clean border; 버튼 `#D4537E` 계열 통일 |
 | 2026-05-10 | design: Y2K 네오 브루탈리즘 전면 리디자인 | Galmuri 픽셀폰트, Win95 카드, 마키 띠, 네온글로우, 젤리 버튼 적용 — 전체 4개 페이지(landing/create/[id]/invite) + globals.css 완전 교체; lib/* 로직 무변경 |
+| 2026-05-10 | fix: Next.js 15.4.5 → 16.2.6 업데이트 | 보안 취약점 패치; next.config.ts에서 Next.js 16에서 제거된 `eslint` 키 삭제 |
 
 ---
 
