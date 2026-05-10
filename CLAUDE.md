@@ -166,6 +166,7 @@ Member / Expense의 `id` 필드는 **순차 배열 인덱스이며 안정적 UUI
 | 2025-xx-xx | 초기 프로젝트 생성 (Next.js 15 + Firebase) | — |
 | 2026-05-09 | CLAUDE.md 전면 재작성 (포트폴리오 MD 구조 반영) | 기술부채 명시, 개발 규칙·이력 테이블 추가 |
 | 2026-05-09 | 기술부채 해소: `lib/settlement.ts`, `lib/session.ts` 분리 | `calculateSettlement` 및 세션 헬퍼 중복 제거 완료; `clearMemberSession`에서 React 상태 의존성 제거하여 순수 lib 함수화 |
+| 2026-05-10 | feat: 내 정산 요약 카드 및 항목 하이라이트 추가 | 정산 탭 상단에 로그인 사용자 기준 보낼 돈/받을 돈 요약 카드; 전체 목록에서 나 포함 항목 핑크 하이라이트 + 뱃지 |
 
 ---
 

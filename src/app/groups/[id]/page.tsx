@@ -759,6 +759,12 @@ ${to.account}`;
 
   const settlements = calculateSettlement(group.expenses, group.members);
 
+  const myMemberId = currentMember?.id ?? -1;
+  const toSend = currentMember ? settlements.filter(s => s.from === myMemberId) : [];
+  const toReceive = currentMember ? settlements.filter(s => s.to === myMemberId) : [];
+  const totalSend = toSend.reduce((sum, s) => sum + s.amount, 0);
+  const totalReceive = toReceive.reduce((sum, s) => sum + s.amount, 0);
+
   return (
     <div className="min-h-screen py-8 px-4">
       {/* ✅ 멤버 선택 모달 - 최우선 표시 */}
@@ -1330,81 +1336,179 @@ ${to.account}`;
         )}
 
         {activeTab === "settlement" && (
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl">
-            <h3 className="text-xl font-bold text-warm-dark mb-4">🔥 실시간 정산 결과</h3>
+          <div className="space-y-6">
+            {/* 내 정산 요약 카드 */}
+            {currentMember && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-pink-200/60 shadow-xl">
+                <div className="flex items-center gap-2 mb-5">
+                  <span className="text-xl">👤</span>
+                  <h3 className="text-lg font-bold text-warm-dark">내 정산 요약</h3>
+                  <span className="ml-auto px-3 py-1 bg-gradient-to-r from-pink-400 to-pink-500 text-white text-sm rounded-full font-medium">
+                    {currentMember.name}
+                  </span>
+                </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
-              <div className="flex items-center gap-2 text-blue-800 text-sm">
-                <span className="text-lg">💡</span>
-                <span>
-                  <strong>프로필을 클릭</strong>하면 계좌번호를 확인할 수 있어요!
-                </span>
-              </div>
-            </div>
-
-            {settlements.length === 0 ? (
-              <p className="text-warm-gray text-center py-8">
-                아직 정산할 내용이 없습니다.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {settlements.map((settlement, index) => {
-                  const from = group.members.find((m) => m.id === settlement.from);
-                  const to = group.members.find((m) => m.id === settlement.to);
-
-                  return (
-                    <div
-                      key={index}
-                      className="p-4 bg-white/10 rounded-lg border border-white/20"
-                    >
-                      {/* 프로필 영역 */}
-                      <div className="flex items-center justify-center gap-3 mb-4">
-                        <div
-                          className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
-                          style={{ backgroundColor: from?.color }}
-                          onClick={() => from && showMemberAccount(from)}
-                          title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
-                        >
-                          <span className="text-lg">{from?.name.charAt(0)}</span>
+                {toSend.length === 0 && toReceive.length === 0 ? (
+                  <p className="text-center py-4 text-warm-dark font-semibold">✅ 정산이 완료됐습니다!</p>
+                ) : (
+                  <>
+                    {/* 보내야 할 돈 */}
+                    <div className="mb-4">
+                      <p className="font-semibold text-warm-dark mb-2">💸 보내야 할 돈</p>
+                      {toSend.length === 0 ? (
+                        <p className="text-warm-gray text-sm pl-2">보내야 할 금액이 없습니다 ✅</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {toSend.map((s, i) => {
+                            const toMember = group.members.find(m => m.id === s.to);
+                            return (
+                              <div key={i} className="flex items-center justify-between pl-2">
+                                <span className="text-warm-dark text-sm">
+                                  <span className="font-medium">{toMember?.name}</span>에게
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-pink-600">{s.amount.toLocaleString()}원</span>
+                                  {toMember?.account && (
+                                    <button
+                                      onClick={() => copyAccount(toMember.account)}
+                                      className="px-2 py-1 text-xs bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-md transition-all"
+                                    >
+                                      계좌복사
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                        <span className="text-3xl text-pink-500">→</span>
-                        <div
-                          className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
-                          style={{ backgroundColor: to?.color }}
-                          onClick={() => to && showMemberAccount(to)}
-                          title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
-                        >
-                          <span className="text-lg">{to?.name.charAt(0)}</span>
-                        </div>
-                      </div>
-
-                      {/* 텍스트 정보 - 명확한 설명 */}
-                      <div className="text-center mb-4">
-                        <div className="text-warm-dark font-medium text-base leading-relaxed mb-2">
-                          <strong className="text-warm-dark">{from?.name}</strong>이{" "}
-                          <strong className="text-warm-dark">{to?.name}</strong>에게
-                          <br />
-                          송금해야 합니다
-                        </div>
-                        <div className="text-3xl font-bold text-pink-600">
-                          {settlement.amount.toLocaleString()}원
-                        </div>
-                      </div>
-
-                      {/* 버튼 */}
-                      <button
-                        onClick={() =>
-                          copySettlementMessage(from!, to!, settlement.amount)
-                        }
-                        className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all text-base"
-                      >
-                        📋 송금 정보 복사
-                      </button>
+                      )}
                     </div>
-                  );
-                })}
+
+                    {/* 받아야 할 돈 */}
+                    <div className="mb-4">
+                      <p className="font-semibold text-warm-dark mb-2">💰 받아야 할 돈</p>
+                      {toReceive.length === 0 ? (
+                        <p className="text-warm-gray text-sm pl-2">받을 금액이 없습니다</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {toReceive.map((s, i) => {
+                            const fromMember = group.members.find(m => m.id === s.from);
+                            return (
+                              <div key={i} className="flex items-center justify-between pl-2">
+                                <span className="text-warm-dark text-sm">
+                                  <span className="font-medium">{fromMember?.name}</span>에게서
+                                </span>
+                                <span className="font-bold text-green-600">{s.amount.toLocaleString()}원</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 합계 */}
+                    <div className="pt-3 border-t border-white/30 flex justify-between text-sm">
+                      <span className="text-warm-gray">보낼 돈 <strong className="text-pink-600">{totalSend.toLocaleString()}원</strong></span>
+                      <span className="text-warm-gray">받을 돈 <strong className="text-green-600">{totalReceive.toLocaleString()}원</strong></span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
+
+            {/* 전체 정산 목록 */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-xl">
+              <h3 className="text-xl font-bold text-warm-dark mb-4">🔥 실시간 정산 결과</h3>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
+                <div className="flex items-center gap-2 text-blue-800 text-sm">
+                  <span className="text-lg">💡</span>
+                  <span>
+                    <strong>프로필을 클릭</strong>하면 계좌번호를 확인할 수 있어요!
+                  </span>
+                </div>
+              </div>
+
+              {settlements.length === 0 ? (
+                <p className="text-warm-gray text-center py-8">
+                  아직 정산할 내용이 없습니다.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {settlements.map((settlement, index) => {
+                    const from = group.members.find((m) => m.id === settlement.from);
+                    const to = group.members.find((m) => m.id === settlement.to);
+                    const isMySettlement = currentMember && (
+                      settlement.from === myMemberId || settlement.to === myMemberId
+                    );
+
+                    return (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border ${
+                          isMySettlement
+                            ? "bg-pink-50 border-pink-200"
+                            : "bg-white/10 border-white/20"
+                        }`}
+                      >
+                        {/* 내 항목 뱃지 */}
+                        {isMySettlement && (
+                          <div className="flex justify-end mb-2">
+                            <span className="px-2 py-0.5 text-xs bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-full font-medium">
+                              나 포함
+                            </span>
+                          </div>
+                        )}
+
+                        {/* 프로필 영역 */}
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                          <div
+                            className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
+                            style={{ backgroundColor: from?.color }}
+                            onClick={() => from && showMemberAccount(from)}
+                            title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
+                          >
+                            <span className="text-lg">{from?.name.charAt(0)}</span>
+                          </div>
+                          <span className="text-3xl text-pink-500">→</span>
+                          <div
+                            className="w-14 h-14 rounded-full text-white font-bold flex items-center justify-center cursor-pointer hover:scale-110 transition-transform border-2 border-white/50 hover:border-white/90 shadow-lg hover:shadow-xl flex-shrink-0"
+                            style={{ backgroundColor: to?.color }}
+                            onClick={() => to && showMemberAccount(to)}
+                            title="👆 클릭하면 계좌번호를 확인할 수 있어요!"
+                          >
+                            <span className="text-lg">{to?.name.charAt(0)}</span>
+                          </div>
+                        </div>
+
+                        {/* 텍스트 정보 */}
+                        <div className="text-center mb-4">
+                          <div className="text-warm-dark font-medium text-base leading-relaxed mb-2">
+                            <strong className="text-warm-dark">{from?.name}</strong>이{" "}
+                            <strong className="text-warm-dark">{to?.name}</strong>에게
+                            <br />
+                            송금해야 합니다
+                          </div>
+                          <div className="text-3xl font-bold text-pink-600">
+                            {settlement.amount.toLocaleString()}원
+                          </div>
+                        </div>
+
+                        {/* 버튼 */}
+                        <button
+                          onClick={() =>
+                            copySettlementMessage(from!, to!, settlement.amount)
+                          }
+                          className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all text-base"
+                        >
+                          📋 송금 정보 복사
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
