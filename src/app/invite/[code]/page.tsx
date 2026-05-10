@@ -33,6 +33,11 @@ export default function InvitePage() {
   const [existingMembership, setExistingMembership] = useState<MemberSession | null>(null)
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null)
 
+  const [showProxyCheck, setShowProxyCheck] = useState(false)
+  const [selectedProxyMember, setSelectedProxyMember] = useState<any>(null)
+  const [showProxyConfirm, setShowProxyConfirm] = useState(false)
+  const [claimingProxy, setClaimingProxy] = useState(false)
+
   const [memberInfo, setMemberInfo] = useState({
     name: '',
     phone: '',
@@ -100,6 +105,11 @@ export default function InvitePage() {
           } else {
             clearMemberSession(groupData.id)
             setExistingMembership(null)
+          }
+        } else {
+          const proxyMembers = groupData.members.filter((m: any) => m.isProxy === true)
+          if (proxyMembers.length > 0) {
+            setShowProxyCheck(true)
           }
         }
 
@@ -189,6 +199,23 @@ export default function InvitePage() {
       alert('그룹 참여 중 오류가 발생했습니다. 다시 시도해주세요.')
     } finally {
       setJoining(false)
+    }
+  }
+
+  const claimProxyMember = async () => {
+    if (!group || !selectedProxyMember) return
+    setClaimingProxy(true)
+    try {
+      const updatedMembers = group.members.map((m: any) =>
+        m.id === selectedProxyMember.id ? { ...m, isProxy: false } : m
+      )
+      await updateDoc(doc(db, 'groups', group.id), { members: updatedMembers, lastUpdated: new Date() })
+      saveMemberSession(group.id, selectedProxyMember.id, selectedProxyMember.name)
+      router.push(`/groups/${group.id}`)
+    } catch (error) {
+      alert('오류가 발생했습니다. 다시 시도해주세요.')
+    } finally {
+      setClaimingProxy(false)
     }
   }
 
@@ -333,8 +360,50 @@ export default function InvitePage() {
             </div>
           </div>
 
+          {/* 프록시 확인 화면 */}
+          {showProxyCheck && !showJoinForm && !existingMembership && (
+            <div className="y2k-card overflow-hidden mb-4">
+              <div className="y2k-win95-bar">
+                <span className="font-pixel text-[9px] text-white">🔍 본인 확인.exe</span>
+                <div className="flex gap-1">
+                  <div className="y2k-win95-btn">_</div>
+                  <div className="y2k-win95-btn">□</div>
+                  <div className="y2k-win95-btn">✕</div>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-1">혹시 목록에 계신가요?</p>
+                <p className="text-[10px] text-[var(--y2k-t2)] mb-4">그룹장이 미리 추가해둔 멤버입니다. 본인이시면 선택해주세요!</p>
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {group.members.filter((m: any) => m.isProxy === true).map((member: any) => (
+                    <button
+                      key={member.id}
+                      onClick={() => { setSelectedProxyMember(member); setShowProxyConfirm(true) }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-[var(--y2k-black)] transition-all hover:scale-105"
+                      style={{ background: 'white', boxShadow: '2px 2px 0 var(--y2k-black)' }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full text-[9px] font-bold flex items-center justify-center border border-[var(--y2k-black)] text-[var(--y2k-black)]"
+                        style={{ backgroundColor: member.color }}
+                      >
+                        {member.name.charAt(0)}
+                      </div>
+                      <span className="text-[12px] font-semibold text-[var(--y2k-black)]">{member.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowProxyCheck(false)}
+                  className="y2k-btn-out w-full py-2.5 text-sm font-semibold"
+                >
+                  목록에 없어요 →
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* 버튼 영역 */}
-          {!showJoinForm && (
+          {!showJoinForm && !showProxyCheck && (
             <div className="space-y-3 mb-6">
               {existingMembership && (
                 <>
@@ -483,6 +552,50 @@ export default function InvitePage() {
           </div>
         </div>
       </div>
+
+      {/* 프록시 멤버 확인 모달 */}
+      {showProxyConfirm && selectedProxyMember && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="y2k-win95 max-w-sm w-full">
+            <div className="y2k-win95-bar">
+              <span className="font-pixel text-[9px] text-white">✅ 본인 확인.exe</span>
+              <div className="flex gap-1">
+                <div className="y2k-win95-btn">_</div>
+                <div className="y2k-win95-btn">□</div>
+                <div className="y2k-win95-btn" onClick={() => { if (!claimingProxy) { setShowProxyConfirm(false); setSelectedProxyMember(null) } }}>✕</div>
+              </div>
+            </div>
+            <div className="bg-white p-5 text-center">
+              <div
+                className="w-16 h-16 rounded-full text-[var(--y2k-black)] text-2xl font-bold flex items-center justify-center mx-auto mb-3 border-2 border-[var(--y2k-black)]"
+                style={{ backgroundColor: selectedProxyMember.color, boxShadow: '2px 2px 0 var(--y2k-black)' }}
+              >
+                {selectedProxyMember.name.charAt(0)}
+              </div>
+              <p className="font-pixel text-[13px] text-[var(--y2k-black)] mb-1">{selectedProxyMember.name}</p>
+              <p className="text-[11px] text-[var(--y2k-t2)] mb-5">본인이 맞으신가요?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowProxyConfirm(false); setSelectedProxyMember(null) }}
+                  disabled={claimingProxy}
+                  className="y2k-btn-out flex-1 py-2.5 text-sm disabled:opacity-50"
+                >
+                  아니요
+                </button>
+                <button
+                  onClick={claimProxyMember}
+                  disabled={claimingProxy}
+                  className="y2k-btn flex-1 py-2.5 disabled:opacity-50"
+                >
+                  {claimingProxy ? (
+                    <span className="flex items-center justify-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--y2k-black)]"></div>입장 중...</span>
+                  ) : <span className="font-pixel text-[11px]">네, 맞아요!</span>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 멤버 선택 모달 */}
       {showMemberSelectModal && (

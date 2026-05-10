@@ -20,6 +20,7 @@ interface Member {
   phone: string;
   account: string;
   color: string;
+  isProxy?: boolean;
 }
 
 interface Expense {
@@ -89,6 +90,12 @@ export default function GroupDashboard() {
     title: "", amount: "", payerId: "", participants: [] as number[],
     date: new Date().toISOString().split("T")[0],
   });
+
+  // 임시 멤버 추가 관련 state
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberAccount, setNewMemberAccount] = useState('');
+  const [addMemberLoading, setAddMemberLoading] = useState(false);
 
   const selectAndSaveMember = () => {
     if (!group || selectedMemberId === null) return;
@@ -309,6 +316,28 @@ export default function GroupDashboard() {
       await updateDoc(doc(db, "groups", params.id as string), { expenses: updated, lastUpdated: new Date() });
       alert("🗑️ 지출 내역이 삭제되었습니다.");
     } catch (error) { alert("지출 삭제 중 오류가 발생했습니다."); }
+  };
+
+  const MEMBER_COLORS = ['#ff9a9e', '#fecfef', '#ffecd2', '#fcb69f', '#ff8a80', '#f8bbd9', '#ffcccb', '#ffd1dc', '#ffe4e1', '#ffb3ba', '#ffdfba', '#ffffba'];
+
+  const addProxyMember = async () => {
+    if (!group || !newMemberName.trim()) { alert('이름을 입력해주세요.'); return; }
+    if (group.members.some(m => m.name.trim().toLowerCase() === newMemberName.trim().toLowerCase())) { alert('이미 같은 이름의 멤버가 있습니다.'); return; }
+    setAddMemberLoading(true);
+    try {
+      const newMember: Member = {
+        id: group.members.length,
+        name: newMemberName.trim(),
+        phone: '',
+        account: newMemberAccount.trim(),
+        color: MEMBER_COLORS[group.members.length % MEMBER_COLORS.length],
+        isProxy: true,
+      };
+      await updateDoc(doc(db, 'groups', params.id as string), { members: [...group.members, newMember], lastUpdated: new Date() });
+      setNewMemberName('');
+      setNewMemberAccount('');
+      setShowAddMemberModal(false);
+    } catch (error) { alert('멤버 추가 중 오류가 발생했습니다.'); } finally { setAddMemberLoading(false); }
   };
 
   const toggleExpenseParticipant = (memberId: number) => {
@@ -561,7 +590,10 @@ export default function GroupDashboard() {
                 </div>
               </div>
               <div className="mb-4">
-                <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-2">참여자 선택</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)]">참여자 선택</label>
+                  <button type="button" onClick={() => setShowAddMemberModal(true)} className="y2k-btn-out px-3 py-1 text-[10px]">+ 참여자 추가</button>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {group.members.map(member => (
                     <label
@@ -940,6 +972,40 @@ export default function GroupDashboard() {
                       <span className="flex items-center justify-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>처리중...</span>
                     ) : '🗑️ 제외하기'}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 임시 멤버 추가 모달 */}
+        {showAddMemberModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="y2k-win95 max-w-sm w-full">
+              <div className="y2k-win95-bar">
+                <span className="font-pixel text-[11px] text-white">👤 참여자 추가.exe</span>
+                <div className="flex gap-1">
+                  <div className="y2k-win95-btn">_</div><div className="y2k-win95-btn">□</div>
+                  <div className="y2k-win95-btn" onClick={() => { setShowAddMemberModal(false); setNewMemberName(''); setNewMemberAccount(''); }}>✕</div>
+                </div>
+              </div>
+              <div className="bg-white p-5 space-y-4">
+                <p className="text-[10px] text-[var(--y2k-t2)] leading-relaxed">아직 초대 링크로 참여하지 않은 멤버를 임시로 추가합니다. 해당 멤버가 초대 링크로 입장하면 자동으로 연결됩니다.</p>
+                <div>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">이름 *</label>
+                  <input type="text" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} placeholder="예: 홍길동" disabled={addMemberLoading} className="y2k-input disabled:opacity-50" />
+                </div>
+                <div>
+                  <label className="font-pixel text-[11px] text-[var(--y2k-t2)] block mb-1">계좌번호 (선택)</label>
+                  <input type="text" value={newMemberAccount} onChange={e => setNewMemberAccount(e.target.value)} placeholder="은행명 계좌번호" disabled={addMemberLoading} className="y2k-input disabled:opacity-50" />
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button onClick={addProxyMember} disabled={addMemberLoading || !newMemberName.trim()} className="y2k-btn flex-1 py-2.5 text-sm disabled:opacity-50">
+                    {addMemberLoading ? (
+                      <span className="flex items-center justify-center gap-2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--y2k-black)]"></div>추가 중...</span>
+                    ) : '✦ 추가하기'}
+                  </button>
+                  <button onClick={() => { setShowAddMemberModal(false); setNewMemberName(''); setNewMemberAccount(''); }} disabled={addMemberLoading} className="y2k-btn-out flex-1 py-2.5 text-sm disabled:opacity-50">취소</button>
                 </div>
               </div>
             </div>
